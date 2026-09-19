@@ -9,6 +9,7 @@ RecipeViewerEvents.registerSubtypes('item', event => {
     event.useComponents('kubejs:incomplete_axe', 'custom_data')
     event.useComponents('kubejs:incomplete_shovel', 'custom_data')
     event.useComponents('kubejs:incomplete_hoe', 'custom_data')
+    event.useComponents('kubejs:sword_guard_core', 'custom_data')
     event.useComponents('kubejs:incomplete_sword', 'custom_data')
     event.useComponents('kubejs:incomplete_refined_gem', 'custom_data')
     event.useComponents('kubejs:incomplete_perfect_gem', 'custom_data')
