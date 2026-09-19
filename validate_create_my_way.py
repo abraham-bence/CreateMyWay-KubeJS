@@ -105,14 +105,17 @@ def main():
         "cmwItemId", "registry.materialEquipment[gem]", "cmwInstalledGem(parts)",
     ))
     tooltip_script = require_markers("client_scripts/cmw_part_tooltips.js", (
-        "ItemEvents.modifyTooltips", "tooltip.dynamic('createmyway:equipment_details')",
-        "Gem Socket: Empty", "Gem Socket: ${displayName(gemMaterial)}",
+        "tooltip.dynamic('createmyway:part_comparison')",
+        "ItemEvents.dynamicTooltips('createmyway:part_comparison'",
+        "AllDynamicTypes", "Material values (not final equipment stats):",
+        "Compatible with:", "Gem abilities by equipment:", "Part modifiers:",
+        "tooltip.dynamic('createmyway:equipment_details')", "Gem Socket: Empty",
+        "Gem Socket: ${displayName(gemMaterial)}",
     ))
     if any(marker in tooltip_script for marker in (
-        "tooltip.dynamic('createmyway:part_details')", "CreateMyWay Components",
-        "addEffectLines(", "Remove gem:", "Install:",
+        "CreateMyWay Components", "  Blade:", "  Guard:", "Remove gem:",
     )):
-        fail("CreateMyWay custom tooltips must display gem socket status only")
+        fail("finished equipment tooltips must stay socket-only")
 
     sword = json.loads((ROOT / "data/slag/slag/modulars/sword.json").read_text(encoding="utf-8"))
     expected_segments = ["slag:parts/sword_blades", "slag:parts/guards", "createmyway:parts/gems", "createmyway:parts/handles"]
@@ -141,6 +144,7 @@ def main():
     print(f"  sword guard core recipes: {sword_core_count}")
     print("  gem installation: dynamic Create Deployer recipe")
     print("  gem removal: powered Create Mechanical Saw interaction")
+    print("  part and gem comparison tooltips: material stats, modifiers and abilities")
     print(f"  valid custom-part texture layers: {texture_count}")
 
 
