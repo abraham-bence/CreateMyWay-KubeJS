@@ -1,22 +1,38 @@
 {
   "id": "createmyway:amethyst_gem",
-
-  "defense": 5.0,
+  "cmw_role": "gem",
+  "cmw_display_name": "Cut Amethyst Gem",
+  "cmw_tier": "cut",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "#c:gems/amethyst",
+  "cmw_effects": {
+    "pickaxe": {
+      "enchantments": {
+        "minecraft:silk_touch": 1
+      }
+    },
+    "sword": {
+      "enchantments": {
+        "minecraft:sweeping_edge": 1
+      }
+    }
+  },
+  "defense": 5,
   "durability": 44.8,
-  "enchantability": 54.0,
+  "enchantability": 54,
   "sharpness": 5.5,
-
   "speed": 2.1,
   "tier": 0.0,
-
   "texture": "metal",
-
   "repair_ingredient": {
     "tag": "c:gems/amethyst"
   },
-
-  "molten_fluid": "slag:molten_amethyst",
-
-  "sort_order": 180,
-  "generate_acquisition_recipe": false
+  "sort_order": 130,
+  "molten_fluid": "slag:molten_amethyst"
 }

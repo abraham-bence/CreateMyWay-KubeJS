@@ -1,0 +1,13 @@
+{
+  "actions": ["axe", "isTool"],
+  "final_segment_stacks": [],
+  "id": "slag:axe",
+  "item_tags": ["minecraft:axes", "c:tools/melee_weapon"],
+  "model_type": "handheld",
+  "segments": [
+    "slag:parts/axe_heads",
+    "createmyway:parts/gems",
+    "createmyway:parts/handles"
+  ],
+  "sort_order": 2
+}

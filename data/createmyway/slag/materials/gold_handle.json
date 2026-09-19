@@ -1,0 +1,25 @@
+{
+  "id": "createmyway:gold_handle",
+  "cmw_role": "handle",
+  "cmw_display_name": "Gold Handle",
+  "cmw_description": "Exceptionally fast and enchantable, but extremely fragile.",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "defense": 3.0,
+  "durability": 128.0,
+  "enchantability": 24.0,
+  "sharpness": 3.0,
+  "speed": 20.0,
+  "tier": 0.0,
+  "texture": "shiny",
+  "repair_ingredient": {
+    "tag": "c:ingots/gold"
+  },
+  "molten_fluid": "slag:molten_gold",
+  "sort_order": 44
+}

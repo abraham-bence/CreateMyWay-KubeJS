@@ -1,0 +1,13 @@
+{
+  "actions": ["hoe", "isTool"],
+  "final_segment_stacks": [],
+  "id": "slag:hoe",
+  "item_tags": ["minecraft:hoes"],
+  "model_type": "handheld",
+  "segments": [
+    "slag:parts/hoe_heads",
+    "createmyway:parts/gems",
+    "createmyway:parts/handles"
+  ],
+  "sort_order": 3
+}

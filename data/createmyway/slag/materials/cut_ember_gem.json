@@ -1,0 +1,26 @@
+{
+  "id": "createmyway:cut_ember_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Cut Ember Gem",
+  "cmw_tier": "cut",
+  "cmw_equipment": [
+    "sword"
+  ],
+  "cmw_source_ingredient": "minecraft:blaze_powder",
+  "cmw_effects": {
+    "sword": {
+      "fire_seconds": 3
+    }
+  },
+  "defense": 4,
+  "durability": 80,
+  "enchantability": 24,
+  "sharpness": 5.5,
+  "speed": 1.8,
+  "tier": 0.0,
+  "texture": "metal",
+  "repair_ingredient": {
+    "item": "minecraft:blaze_powder"
+  },
+  "sort_order": 206
+}

@@ -1,0 +1,34 @@
+{
+  "id": "createmyway:perfect_rose_quartz_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Perfect Rose Quartz Gem",
+  "cmw_tier": "perfect",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "create:rose_quartz",
+  "cmw_effects": {
+    "pickaxe": {
+      "block_reach": 1.5
+    },
+    "sword": {
+      "attack_reach": 0.75
+    }
+  },
+  "defense": 4,
+  "durability": 96,
+  "enchantability": 24,
+  "sharpness": 5.5,
+  "speed": 2.7,
+  "tier": 0.0,
+  "texture": "shiny",
+  "repair_ingredient": {
+    "item": "create:rose_quartz"
+  },
+  "sort_order": 152,
+  "cmw_previous": "createmyway:refined_rose_quartz_gem"
+}

@@ -3,20 +3,232 @@
 
 ServerEvents.recipes(event => {
 
-  event.recipes.createmetallurgy.casting_in_table(
-    Item.of("slag:dynamic_part[slag:material_type=\"createmyway:iron_handle\",slag:part_type=\"createmyway:handle\"]"),
-    [
-      Fluid.of("createmetallurgy:molten_iron", 45),
-      "createmetallurgy:graphite_rod_mold"
-    ]
-  ).processingTime(30).id("createmyway:form_iron_handle")
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:amethyst_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("#c:gems/amethyst"))
+    .id("createmyway:form_amethyst_gem")
 
-  event.recipes.createmetallurgy.casting_in_table(
-    Item.of("slag:dynamic_part[slag:material_type=\"createmyway:rose_gold_handle\",slag:part_type=\"createmyway:handle\"]"),
-    [
-      Fluid.of("slag:molten_rose_gold", 45),
-      "createmetallurgy:graphite_rod_mold"
-    ]
-  ).processingTime(30).id("createmyway:form_rose_gold_handle")
+  event.recipes.createmetallurgy.casting_in_table(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:copper_handle\",slag:part_type=\"createmyway:handle\"]"), [Fluid.of("slag:molten_copper", 45), 'createmetallurgy:graphite_rod_mold'])
+    .processingTime(30).id("createmyway:form_copper_handle")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_diamond_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("#c:gems/diamond"))
+    .id("createmyway:form_cut_diamond_gem")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_dulling_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("minecraft:fermented_spider_eye"))
+    .id("createmyway:form_cut_dulling_gem")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_ember_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("minecraft:blaze_powder"))
+    .id("createmyway:form_cut_ember_gem")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_emerald_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("#c:gems/emerald"))
+    .id("createmyway:form_cut_emerald_gem")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_frost_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("minecraft:packed_ice"))
+    .id("createmyway:form_cut_frost_gem")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_lapis_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("#c:gems/lapis"))
+    .id("createmyway:form_cut_lapis_gem")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_quartz_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("#c:gems/quartz"))
+    .id("createmyway:form_cut_quartz_gem")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_rose_quartz_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("create:rose_quartz"))
+    .id("createmyway:form_cut_rose_quartz_gem")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_venom_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("minecraft:spider_eye"))
+    .id("createmyway:form_cut_venom_gem")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_wither_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("minecraft:wither_rose"))
+    .id("createmyway:form_cut_wither_gem")
+
+  event.recipes.create.pressing(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:deep_alloy_handle\",slag:part_type=\"createmyway:handle\"]"), Ingredient.of("#c:ingots/deep_alloy"))
+    .id("createmyway:form_deep_alloy_handle")
+
+  event.recipes.createmetallurgy.casting_in_table(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:diamond_handle\",slag:part_type=\"createmyway:handle\"]"), [Fluid.of("slag:molten_diamond", 45), 'createmetallurgy:graphite_rod_mold'])
+    .processingTime(30).id("createmyway:form_diamond_handle")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:echo_gem\",slag:part_type=\"createmyway:gem\"]"), Ingredient.of("minecraft:echo_shard"))
+    .id("createmyway:form_echo_gem")
+
+  event.recipes.createmetallurgy.casting_in_table(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:gold_handle\",slag:part_type=\"createmyway:handle\"]"), [Fluid.of("slag:molten_gold", 45), 'createmetallurgy:graphite_rod_mold'])
+    .processingTime(30).id("createmyway:form_gold_handle")
+
+  event.recipes.createmetallurgy.casting_in_table(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:iron_handle\",slag:part_type=\"createmyway:handle\"]"), [Fluid.of("createmetallurgy:molten_iron", 45), 'createmetallurgy:graphite_rod_mold'])
+    .processingTime(30).id("createmyway:form_iron_handle")
+
+  event.recipes.createmetallurgy.casting_in_table(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:netherite_handle\",slag:part_type=\"createmyway:handle\"]"), [Fluid.of("slag:molten_netherite", 45), 'createmetallurgy:graphite_rod_mold'])
+    .processingTime(30).id("createmyway:form_netherite_handle")
+
+  event.recipes.createmetallurgy.casting_in_table(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:obsidian_handle\",slag:part_type=\"createmyway:handle\"]"), [Fluid.of("slag:molten_obsidian", 45), 'createmetallurgy:graphite_rod_mold'])
+    .processingTime(30).id("createmyway:form_obsidian_handle")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_amethyst_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_amethyst_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_amethyst_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_amethyst_gem\"}]", Ingredient.of("#c:gems/amethyst")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_amethyst_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_amethyst_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_amethyst_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_amethyst_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_amethyst_gem\"}]").withCustomName("Incomplete Perfect Amethyst Gem"))
+    .loops(1).id("createmyway:form_perfect_amethyst_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_diamond_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_diamond_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_diamond_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_diamond_gem\"}]", Ingredient.of("#c:gems/diamond")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_diamond_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_diamond_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_diamond_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_diamond_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_diamond_gem\"}]").withCustomName("Incomplete Perfect Diamond Gem"))
+    .loops(1).id("createmyway:form_perfect_diamond_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_dulling_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_dulling_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_dulling_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_dulling_gem\"}]", Ingredient.of("minecraft:fermented_spider_eye")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_dulling_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_dulling_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_dulling_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_dulling_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_dulling_gem\"}]").withCustomName("Incomplete Perfect Dulling Gem"))
+    .loops(1).id("createmyway:form_perfect_dulling_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_ember_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_ember_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_ember_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_ember_gem\"}]", Ingredient.of("minecraft:blaze_powder")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_ember_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_ember_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_ember_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_ember_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_ember_gem\"}]").withCustomName("Incomplete Perfect Ember Gem"))
+    .loops(1).id("createmyway:form_perfect_ember_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_emerald_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_emerald_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_emerald_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_emerald_gem\"}]", Ingredient.of("#c:gems/emerald")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_emerald_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_emerald_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_emerald_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_emerald_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_emerald_gem\"}]").withCustomName("Incomplete Perfect Emerald Gem"))
+    .loops(1).id("createmyway:form_perfect_emerald_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_frost_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_frost_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_frost_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_frost_gem\"}]", Ingredient.of("minecraft:packed_ice")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_frost_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_frost_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_frost_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_frost_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_frost_gem\"}]").withCustomName("Incomplete Perfect Frost Gem"))
+    .loops(1).id("createmyway:form_perfect_frost_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_lapis_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_lapis_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_lapis_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_lapis_gem\"}]", Ingredient.of("#c:gems/lapis")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_lapis_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_lapis_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_lapis_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_lapis_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_lapis_gem\"}]").withCustomName("Incomplete Perfect Lapis Gem"))
+    .loops(1).id("createmyway:form_perfect_lapis_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_quartz_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_quartz_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_quartz_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_quartz_gem\"}]", Ingredient.of("#c:gems/quartz")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_quartz_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_quartz_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_quartz_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_quartz_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_quartz_gem\"}]").withCustomName("Incomplete Perfect Quartz Gem"))
+    .loops(1).id("createmyway:form_perfect_quartz_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_rose_quartz_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_rose_quartz_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_rose_quartz_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_rose_quartz_gem\"}]", Ingredient.of("create:rose_quartz")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_rose_quartz_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_rose_quartz_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_rose_quartz_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_rose_quartz_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_rose_quartz_gem\"}]").withCustomName("Incomplete Perfect Rose Quartz Gem"))
+    .loops(1).id("createmyway:form_perfect_rose_quartz_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_venom_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_venom_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_venom_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_venom_gem\"}]", Ingredient.of("minecraft:spider_eye")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_venom_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_venom_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_venom_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_venom_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_venom_gem\"}]").withCustomName("Incomplete Perfect Venom Gem"))
+    .loops(1).id("createmyway:form_perfect_venom_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:perfect_wither_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_wither_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.deploying("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_wither_gem\"}]", ["kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_wither_gem\"}]", Ingredient.of("minecraft:wither_rose")]),
+      event.recipes.create.pressing("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_wither_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_wither_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_wither_gem\"}]", "kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_wither_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_perfect_gem[minecraft:custom_data={cmw_result:\"createmyway:perfect_wither_gem\"}]").withCustomName("Incomplete Perfect Wither Gem"))
+    .loops(1).id("createmyway:form_perfect_wither_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_amethyst_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:amethyst_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_amethyst_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_amethyst_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_amethyst_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_amethyst_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_amethyst_gem\"}]").withCustomName("Incomplete Refined Amethyst Gem"))
+    .loops(1).id("createmyway:form_refined_amethyst_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_diamond_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_diamond_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_diamond_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_diamond_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_diamond_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_diamond_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_diamond_gem\"}]").withCustomName("Incomplete Refined Diamond Gem"))
+    .loops(1).id("createmyway:form_refined_diamond_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_dulling_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_dulling_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_dulling_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_dulling_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_dulling_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_dulling_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_dulling_gem\"}]").withCustomName("Incomplete Refined Dulling Gem"))
+    .loops(1).id("createmyway:form_refined_dulling_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_ember_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_ember_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_ember_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_ember_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_ember_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_ember_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_ember_gem\"}]").withCustomName("Incomplete Refined Ember Gem"))
+    .loops(1).id("createmyway:form_refined_ember_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_emerald_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_emerald_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_emerald_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_emerald_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_emerald_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_emerald_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_emerald_gem\"}]").withCustomName("Incomplete Refined Emerald Gem"))
+    .loops(1).id("createmyway:form_refined_emerald_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_frost_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_frost_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_frost_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_frost_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_frost_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_frost_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_frost_gem\"}]").withCustomName("Incomplete Refined Frost Gem"))
+    .loops(1).id("createmyway:form_refined_frost_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_lapis_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_lapis_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_lapis_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_lapis_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_lapis_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_lapis_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_lapis_gem\"}]").withCustomName("Incomplete Refined Lapis Gem"))
+    .loops(1).id("createmyway:form_refined_lapis_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_quartz_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_quartz_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_quartz_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_quartz_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_quartz_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_quartz_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_quartz_gem\"}]").withCustomName("Incomplete Refined Quartz Gem"))
+    .loops(1).id("createmyway:form_refined_quartz_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_rose_quartz_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_rose_quartz_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_rose_quartz_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_rose_quartz_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_rose_quartz_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_rose_quartz_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_rose_quartz_gem\"}]").withCustomName("Incomplete Refined Rose Quartz Gem"))
+    .loops(1).id("createmyway:form_refined_rose_quartz_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_venom_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_venom_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_venom_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_venom_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_venom_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_venom_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_venom_gem\"}]").withCustomName("Incomplete Refined Venom Gem"))
+    .loops(1).id("createmyway:form_refined_venom_gem")
+
+  event.recipes.create.sequenced_assembly([Item.of("slag:dynamic_part[slag:material_type=\"createmyway:refined_wither_gem\",slag:part_type=\"createmyway:gem\"]")], Ingredient.of("slag:dynamic_part[slag:material_type=\"createmyway:cut_wither_gem\",slag:part_type=\"createmyway:gem\"]"), [
+      event.recipes.create.pressing("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_wither_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_wither_gem\"}]"),
+      event.recipes.create.cutting("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_wither_gem\"}]", "kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_wither_gem\"}]")
+    ])
+    .transitionalItem(Item.of("kubejs:incomplete_refined_gem[minecraft:custom_data={cmw_result:\"createmyway:refined_wither_gem\"}]").withCustomName("Incomplete Refined Wither Gem"))
+    .loops(1).id("createmyway:form_refined_wither_gem")
+
+  event.recipes.createmetallurgy.casting_in_table(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:rose_gold_handle\",slag:part_type=\"createmyway:handle\"]"), [Fluid.of("slag:molten_rose_gold", 45), 'createmetallurgy:graphite_rod_mold'])
+    .processingTime(30).id("createmyway:form_rose_gold_handle")
+
+  event.recipes.create.cutting(Item.of("slag:dynamic_part[slag:material_type=\"createmyway:wooden_handle\",slag:part_type=\"createmyway:handle\"]"), Ingredient.of("#minecraft:planks"))
+    .id("createmyway:form_wooden_handle")
 
 })

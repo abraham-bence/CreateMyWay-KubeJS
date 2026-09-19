@@ -1,0 +1,27 @@
+{
+  "id": "createmyway:netherite_handle",
+  "cmw_role": "handle",
+  "cmw_display_name": "Netherite Handle",
+  "cmw_description": "An endgame fireproof handle with exceptional durability.",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "defense": 9.0,
+  "durability": 1536.0,
+  "enchantability": 15.0,
+  "sharpness": 7.0,
+  "speed": 11.0,
+  "tier": 0.0,
+  "texture": "metal",
+  "fireproof": true,
+  "knockback_resistance": 0.1,
+  "repair_ingredient": {
+    "tag": "c:ingots/netherite"
+  },
+  "molten_fluid": "slag:molten_netherite",
+  "sort_order": 46
+}

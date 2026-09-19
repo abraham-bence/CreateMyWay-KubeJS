@@ -1,0 +1,39 @@
+{
+  "id": "createmyway:perfect_quartz_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Perfect Quartz Gem",
+  "cmw_tier": "perfect",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "#c:gems/quartz",
+  "cmw_effects": {
+    "pickaxe": {
+      "enchantments": {
+        "minecraft:efficiency": 5
+      }
+    },
+    "sword": {
+      "enchantments": {
+        "minecraft:sharpness": 5
+      }
+    }
+  },
+  "defense": 4,
+  "durability": 57.6,
+  "enchantability": 48,
+  "sharpness": 6.5,
+  "speed": 2.1,
+  "tier": 0.0,
+  "texture": "metal",
+  "repair_ingredient": {
+    "tag": "c:gems/quartz"
+  },
+  "sort_order": 122,
+  "cmw_previous": "createmyway:refined_quartz_gem",
+  "molten_fluid": "slag:molten_quartz"
+}

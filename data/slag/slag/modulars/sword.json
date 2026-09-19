@@ -1,0 +1,20 @@
+{
+  "actions": [
+    "sword",
+    "isTool"
+  ],
+  "final_segment_stacks": [],
+  "id": "slag:sword",
+  "item_tags": [
+    "minecraft:swords",
+    "c:tools/melee_weapon"
+  ],
+  "model_type": "handheld",
+  "segments": [
+    "slag:parts/sword_blades",
+    "slag:parts/guards",
+    "createmyway:parts/gems",
+    "createmyway:parts/handles"
+  ],
+  "sort_order": 4
+}

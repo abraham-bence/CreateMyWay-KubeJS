@@ -1,0 +1,31 @@
+{
+  "id": "createmyway:perfect_wither_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Perfect Wither Gem",
+  "cmw_tier": "perfect",
+  "cmw_equipment": [
+    "sword"
+  ],
+  "cmw_source_ingredient": "minecraft:wither_rose",
+  "cmw_effects": {
+    "sword": {
+      "status_effect": {
+        "id": "minecraft:wither",
+        "duration_ticks": 140,
+        "amplifier": 2
+      }
+    }
+  },
+  "defense": 4,
+  "durability": 80,
+  "enchantability": 24,
+  "sharpness": 5.5,
+  "speed": 1.8,
+  "tier": 0.0,
+  "texture": "metal",
+  "repair_ingredient": {
+    "item": "minecraft:wither_rose"
+  },
+  "sort_order": 211,
+  "cmw_previous": "createmyway:refined_wither_gem"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "createmyway:perfect_amethyst_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Perfect Amethyst Gem",
+  "cmw_tier": "perfect",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "#c:gems/amethyst",
+  "cmw_effects": {
+    "pickaxe": {
+      "enchantments": {
+        "minecraft:silk_touch": 1,
+        "minecraft:efficiency": 4
+      }
+    },
+    "sword": {
+      "enchantments": {
+        "minecraft:sweeping_edge": 3
+      }
+    }
+  },
+  "defense": 5,
+  "durability": 44.8,
+  "enchantability": 54,
+  "sharpness": 5.5,
+  "speed": 2.1,
+  "tier": 0.0,
+  "texture": "metal",
+  "repair_ingredient": {
+    "tag": "c:gems/amethyst"
+  },
+  "sort_order": 132,
+  "cmw_previous": "createmyway:refined_amethyst_gem",
+  "molten_fluid": "slag:molten_amethyst"
+}

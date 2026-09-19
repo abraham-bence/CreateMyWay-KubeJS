@@ -1,0 +1,39 @@
+{
+  "id": "createmyway:refined_quartz_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Refined Quartz Gem",
+  "cmw_tier": "refined",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "#c:gems/quartz",
+  "cmw_effects": {
+    "pickaxe": {
+      "enchantments": {
+        "minecraft:efficiency": 4
+      }
+    },
+    "sword": {
+      "enchantments": {
+        "minecraft:sharpness": 3
+      }
+    }
+  },
+  "defense": 4,
+  "durability": 57.6,
+  "enchantability": 48,
+  "sharpness": 6.5,
+  "speed": 2.1,
+  "tier": 0.0,
+  "texture": "metal",
+  "repair_ingredient": {
+    "tag": "c:gems/quartz"
+  },
+  "sort_order": 121,
+  "cmw_previous": "createmyway:cut_quartz_gem",
+  "molten_fluid": "slag:molten_quartz"
+}

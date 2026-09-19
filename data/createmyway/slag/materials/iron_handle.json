@@ -1,20 +1,25 @@
-
 {
   "id": "createmyway:iron_handle",
-
-  "defense": 6.0,
-  "durability": 512.0,
-  "enchantability": 12.0,
-  "sharpness": 5.0,
-
-  "speed": 12.0,
+  "cmw_role": "handle",
+  "cmw_display_name": "Iron Handle",
+  "cmw_description": "A dependable baseline handle that favors durability over speed.",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "defense": 6,
+  "durability": 512,
+  "enchantability": 12,
+  "sharpness": 5,
+  "speed": 12,
   "tier": 0.0,
-
+  "texture": "metal",
   "repair_ingredient": {
     "tag": "c:ingots/iron"
   },
-
   "molten_fluid": "slag:molten_iron",
-
-  "sort_order": 41
+  "sort_order": 40
 }

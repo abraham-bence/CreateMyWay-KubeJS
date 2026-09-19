@@ -1,21 +1,25 @@
 {
   "id": "createmyway:rose_gold_handle",
-
-  "defense": 6.0,
-  "durability": 384.0,
-  "enchantability": 15.0,
-  "sharpness": 6.0,
-
-  "speed": 17.0,
+  "cmw_role": "handle",
+  "cmw_display_name": "Rose Gold Handle",
+  "cmw_description": "A responsive, high-speed handle that trades away durability.",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "defense": 6,
+  "durability": 384,
+  "enchantability": 15,
+  "sharpness": 6,
+  "speed": 17,
   "tier": 0.0,
-
   "texture": "shiny",
-
   "repair_ingredient": {
     "tag": "c:ingots/rose_gold"
   },
-
   "molten_fluid": "slag:molten_rose_gold",
-
-  "sort_order": 110
+  "sort_order": 41
 }

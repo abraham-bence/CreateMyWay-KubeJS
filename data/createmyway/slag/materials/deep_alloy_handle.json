@@ -1,0 +1,27 @@
+{
+  "id": "createmyway:deep_alloy_handle",
+  "cmw_role": "handle",
+  "cmw_display_name": "Deep Alloy Handle",
+  "cmw_description": "A heavy, fireproof handle focused on dependable durability.",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_handle_process": "pressing",
+  "defense": 7.0,
+  "durability": 960.0,
+  "enchantability": 11.0,
+  "sharpness": 5.0,
+  "speed": 9.5,
+  "tier": 0.0,
+  "texture": "shiny",
+  "fireproof": true,
+  "knockback_resistance": 0.1,
+  "repair_ingredient": {
+    "tag": "c:ingots/deep_alloy"
+  },
+  "sort_order": 45
+}

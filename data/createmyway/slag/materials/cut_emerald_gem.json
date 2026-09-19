@@ -1,0 +1,38 @@
+{
+  "id": "createmyway:cut_emerald_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Cut Emerald Gem",
+  "cmw_tier": "cut",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "#c:gems/emerald",
+  "cmw_effects": {
+    "pickaxe": {
+      "enchantments": {
+        "minecraft:fortune": 1
+      }
+    },
+    "sword": {
+      "enchantments": {
+        "minecraft:looting": 1
+      }
+    }
+  },
+  "defense": 5,
+  "durability": 102.4,
+  "enchantability": 27,
+  "sharpness": 5.5,
+  "speed": 2.4,
+  "tier": 0.0,
+  "texture": "shiny",
+  "repair_ingredient": {
+    "tag": "c:gems/emerald"
+  },
+  "sort_order": 100,
+  "molten_fluid": "slag:molten_emerald"
+}

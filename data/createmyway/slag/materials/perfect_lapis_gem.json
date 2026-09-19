@@ -1,0 +1,28 @@
+{
+  "id": "createmyway:perfect_lapis_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Perfect Lapis Gem",
+  "cmw_tier": "perfect",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "#c:gems/lapis",
+  "cmw_effects": {},
+  "defense": 3,
+  "durability": 76.8,
+  "enchantability": 75,
+  "sharpness": 4.5,
+  "speed": 0.9,
+  "tier": 0.0,
+  "texture": "base",
+  "repair_ingredient": {
+    "tag": "c:gems/lapis"
+  },
+  "sort_order": 142,
+  "cmw_previous": "createmyway:refined_lapis_gem",
+  "molten_fluid": "slag:molten_lapis"
+}

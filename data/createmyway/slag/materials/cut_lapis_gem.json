@@ -1,0 +1,27 @@
+{
+  "id": "createmyway:cut_lapis_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Cut Lapis Gem",
+  "cmw_tier": "cut",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "#c:gems/lapis",
+  "cmw_effects": {},
+  "defense": 3,
+  "durability": 76.8,
+  "enchantability": 25,
+  "sharpness": 4.5,
+  "speed": 0.9,
+  "tier": 0.0,
+  "texture": "base",
+  "repair_ingredient": {
+    "tag": "c:gems/lapis"
+  },
+  "sort_order": 140,
+  "molten_fluid": "slag:molten_lapis"
+}

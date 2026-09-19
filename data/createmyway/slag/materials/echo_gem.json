@@ -1,0 +1,33 @@
+{
+  "id": "createmyway:echo_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Echo Gem",
+  "cmw_tier": "single",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "minecraft:echo_shard",
+  "cmw_effects": {
+    "pickaxe": {
+      "collect_drops": true
+    },
+    "sword": {
+      "collect_drops": true
+    }
+  },
+  "defense": 9,
+  "durability": 307.2,
+  "enchantability": 72,
+  "sharpness": 7,
+  "speed": 3,
+  "tier": 0.0,
+  "texture": "metal",
+  "repair_ingredient": {
+    "item": "minecraft:echo_shard"
+  },
+  "sort_order": 160
+}

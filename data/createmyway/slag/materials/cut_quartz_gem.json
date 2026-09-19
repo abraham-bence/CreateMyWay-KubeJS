@@ -1,0 +1,38 @@
+{
+  "id": "createmyway:cut_quartz_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Cut Quartz Gem",
+  "cmw_tier": "cut",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "#c:gems/quartz",
+  "cmw_effects": {
+    "pickaxe": {
+      "enchantments": {
+        "minecraft:efficiency": 2
+      }
+    },
+    "sword": {
+      "enchantments": {
+        "minecraft:sharpness": 1
+      }
+    }
+  },
+  "defense": 4,
+  "durability": 57.6,
+  "enchantability": 48,
+  "sharpness": 6.5,
+  "speed": 2.1,
+  "tier": 0.0,
+  "texture": "metal",
+  "repair_ingredient": {
+    "tag": "c:gems/quartz"
+  },
+  "sort_order": 120,
+  "molten_fluid": "slag:molten_quartz"
+}

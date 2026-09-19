@@ -1,0 +1,25 @@
+{
+  "id": "createmyway:obsidian_handle",
+  "cmw_role": "handle",
+  "cmw_display_name": "Obsidian Handle",
+  "cmw_description": "Extremely durable and deliberately slow for heavy-duty tools.",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "defense": 10,
+  "durability": 1280,
+  "enchantability": 18,
+  "sharpness": 6.5,
+  "speed": 8,
+  "tier": 0.0,
+  "texture": "shiny",
+  "repair_ingredient": {
+    "item": "minecraft:obsidian"
+  },
+  "molten_fluid": "slag:molten_obsidian",
+  "sort_order": 43
+}

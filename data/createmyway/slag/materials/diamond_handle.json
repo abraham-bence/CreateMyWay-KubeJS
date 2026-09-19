@@ -1,0 +1,25 @@
+{
+  "id": "createmyway:diamond_handle",
+  "cmw_role": "handle",
+  "cmw_display_name": "Diamond Handle",
+  "cmw_description": "A balanced high-tier handle with strong speed and durability.",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "defense": 8,
+  "durability": 768,
+  "enchantability": 12,
+  "sharpness": 6,
+  "speed": 14.5,
+  "tier": 0.0,
+  "texture": "shiny",
+  "repair_ingredient": {
+    "tag": "c:gems/diamond"
+  },
+  "molten_fluid": "slag:molten_diamond",
+  "sort_order": 42
+}

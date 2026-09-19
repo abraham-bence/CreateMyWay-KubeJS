@@ -31,17 +31,17 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Generate names and acquisition recipes
+      - name: Generate registry, names, and progression recipes
         run: python create_my_way_material_generator.py
 
       - name: Commit generated files when changed
         run: |
-          git add assets/createmyway/lang/en_us.json server_scripts/generated_cmw_material_recipes.js
+          git add startup_scripts/generated_cmw_material_registry.js assets/createmyway/lang/en_us.json server_scripts/generated_cmw_material_recipes.js
           if git diff --cached --quiet; then
             echo 'Generated files already up to date.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'chore: sync generated material names and recipes'
+          git commit -m 'chore: sync generated material profiles'
           git push origin HEAD:main

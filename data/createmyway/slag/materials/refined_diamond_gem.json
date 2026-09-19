@@ -1,0 +1,39 @@
+{
+  "id": "createmyway:refined_diamond_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Refined Diamond Gem",
+  "cmw_tier": "refined",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_source_ingredient": "#c:gems/diamond",
+  "cmw_effects": {
+    "pickaxe": {
+      "enchantments": {
+        "minecraft:unbreaking": 2
+      }
+    },
+    "sword": {
+      "enchantments": {
+        "minecraft:unbreaking": 2
+      }
+    }
+  },
+  "defense": 8,
+  "durability": 204.8,
+  "enchantability": 30,
+  "sharpness": 6,
+  "speed": 2.4,
+  "tier": 0.0,
+  "texture": "shiny",
+  "repair_ingredient": {
+    "tag": "c:gems/diamond"
+  },
+  "sort_order": 111,
+  "cmw_previous": "createmyway:cut_diamond_gem",
+  "molten_fluid": "slag:molten_diamond"
+}

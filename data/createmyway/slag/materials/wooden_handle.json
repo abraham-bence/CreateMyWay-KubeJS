@@ -1,0 +1,25 @@
+{
+  "id": "createmyway:wooden_handle",
+  "cmw_role": "handle",
+  "cmw_display_name": "Wooden Handle",
+  "cmw_description": "A light, inexpensive starter handle with quick handling but low durability.",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "cmw_handle_process": "cutting",
+  "defense": 2.0,
+  "durability": 96.0,
+  "enchantability": 8.0,
+  "sharpness": 2.0,
+  "speed": 13.0,
+  "tier": 0.0,
+  "texture": "base",
+  "repair_ingredient": {
+    "tag": "minecraft:planks"
+  },
+  "sort_order": 38
+}

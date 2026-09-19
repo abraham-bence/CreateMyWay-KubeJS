@@ -1,36 +1,77 @@
 # CreateMyWay material profiles
 
-Add **one JSON file** in `data/createmyway/slag/materials/` for each new handle or gem profile. Keep the S&E material definitions separate; do not edit the creative-tab or JEI filters for each material.
+Each JSON file in `data/createmyway/slag/materials/` is the single source of truth for one custom gem or handle. Run `python create_my_way_material_generator.py` after changing a profile.
 
-## ID conventions
+## Shared fields
 
-- `createmyway:<name>_handle` pairs with part `createmyway:handle`.
-- `createmyway:<name>_gem` pairs with part `createmyway:gem`.
+- `id`: a unique `createmyway:` material ID.
+- `cmw_role`: `gem` or `handle`.
+- `cmw_display_name`: the user-facing part name.
+- `cmw_description`: an optional one-line material identity shown in its hover tooltip.
+- `cmw_equipment`: a non-empty list containing any supported equipment: `pickaxe`, `axe`, `shovel`, `hoe`, and `sword`.
+- The remaining defense, durability, enchantability, sharpness, speed, tier, texture, repair, fluid, and order fields are Slag & Embers material data.
 
-The shared filter in `startup_scripts/main.js` recognizes these suffixes; `client_scripts/slag_jei_visibility.js` reuses it. Combinations with the wrong part type are hidden from creative and JEI, without unregistering the base S&E items. Profiles using a different naming convention require updating the shared filter and generator.
+Handles normally require `molten_fluid`. The generator creates a 45 mB Create: Metallurgy table-casting recipe using the graphite rod mold. A profile may instead use `"cmw_handle_process": "pressing"` or `"cutting"`; Deep Alloy is pressed and Wooden is cut from `#minecraft:planks`.
 
-## Example: iron handle
+## Gem progression
 
-See `data/createmyway/slag/materials/iron_handle.json` for a working example. Specify an `id`, S&E material stats, `repair_ingredient`, and `molten_fluid` as appropriate. S&E reads the JSON during game startup.
+Gem profiles also support:
 
-## Automatic names and recipes
+- `cmw_tier`: `cut`, `refined`, `perfect`, or `single`.
+- `cmw_source_ingredient`: an item ID or `#tag` used for cutting and Perfect-tier consumption. If omitted, the repair ingredient is used.
+- `cmw_previous`: required for Refined and Perfect profiles; names the preceding material ID.
+- `cmw_effects`: equipment-specific effects.
 
-When a material JSON is committed to **main**, `.github/workflows/sync-material-profiles.yml` runs `create_my_way_material_generator.py` and, if anything changed, commits both generated outputs back to `main`:
+Cut and single gems are cut directly from their source. Refined gems use pressing and cutting in a one-loop Sequenced Assembly. Perfect gems deploy one extra source ingredient, press, and cut the Refined gem.
 
-- `assets/createmyway/lang/en_us.json` — names like `Iron Handle` (not `Iron Handle Handle`). Existing unrelated translations are preserved.
-- `server_scripts/generated_cmw_material_recipes.js` — starter acquisition recipes.
+## Effect schema
 
-The generator makes a graphite-rod-mold casting recipe (45 mB of the profile's molten fluid) for handles and a cutting recipe using `repair_ingredient` for gems. These are **starter recipes**, not the planned Cut/Refined/Perfect gem progression. Opt a special profile out of the starter recipe by adding `"generate_acquisition_recipe": false` to its JSON. The existing amethyst gem already opts out. Add its progression recipe separately when ready.
+Effects are nested under equipment IDs. `pickaxe` is the canonical utility-tool effect: the generator automatically copies it to compatible axes, shovels, and hoes, while `sword` remains independently configurable.
 
-The workflow requires GitHub Actions to be enabled and permission to push generated commits to `main`. If the action is blocked by repository settings or branch protection, run the generator locally and commit its two outputs yourself.
+```json
+"cmw_effects": {
+  "pickaxe": {
+    "enchantments": {"minecraft:fortune": 1},
+    "block_reach": 0.5,
+    "collect_drops": true
+  },
+  "sword": {
+    "enchantments": {"minecraft:looting": 1},
+    "attack_reach": 0.25,
+    "status_effect": {
+      "id": "minecraft:poison",
+      "duration_ticks": 60,
+      "amplifier": 0
+    },
+    "fire_seconds": 3
+  }
+}
+```
 
-For immediate local testing, run `py create_my_way_material_generator.py` (or `python create_my_way_material_generator.py`) from the KubeJS folder, then restart Minecraft. GitHub's automated commit does **not** change your local game files: pull/sync the repository to your instance first.
+Only include effects the material grants. `amplifier` is zero-based. Status-gem profiles list only `sword` in `cmw_equipment`, so invalid pickaxes are neither generated nor shown.
 
-## Adding your next profile
+## Generated outputs
 
-1. Create the new `*_handle.json` or `*_gem.json` material file.
-2. Commit/push it to `main`, and let the **Sync material profiles** action finish.
-3. Pull/sync the updated KubeJS files and restart Minecraft.
-4. Verify the valid part and its name in creative/JEI; check that wrong material/part combinations stay hidden.
+- `startup_scripts/generated_cmw_material_registry.js`: roles, compatibility, effects, tiers, material names, descriptions, and stats.
+- `assets/createmyway/lang/en_us.json`: part translations while preserving unrelated entries.
+- `server_scripts/generated_cmw_material_recipes.js`: all acquisition and refinement recipes.
 
-No extra whitelist branches or manually added translation/recipe lines are necessary for suffix-conforming profiles. The actual equipment assembly recipe, new gem powers, bespoke models, and new processing tiers remain separate development work.
+`server_scripts/modular_equipments.js` consumes the registry and automatically generates every plain Head × Handle utility tool and Blade × S&E Guard × Handle sword. There are no material-specific naming or recipe branches.
+
+`server_scripts/cmw_gem_socketing.js` adds compatible gems dynamically through a Create Deployer. Because its output is copied from the actual input stack, damage, custom names, and unrelated components survive the operation. Right-clicking a powered Mechanical Saw with the gemmed tool removes and returns the gem.
+
+`client_scripts/cmw_part_tooltips.js` also consumes the registry. Individual parts show their role, compatible equipment, raw material values, S&E part weighting, traits, and granted effects. Finished modular tools list their installed custom components. Updating the profile and rerunning the generator keeps these tooltips synchronized automatically.
+
+The repository workflow regenerates these outputs when material profiles change. For local testing, regenerate them yourself and restart Minecraft; `/kubejs reload server_scripts` is useful for server recipes, but startup item/material/attribute changes still require a full restart.
+
+## Validation and textures
+
+Run these commands after profile edits:
+
+```text
+python create_my_way_material_generator.py
+python tools/build_cmw_textures.py
+python validate_create_my_way.py
+```
+
+`tools/build_cmw_textures.py` creates fallback S&E-aligned pixel layers for every valid custom part. They are intentionally baseline art and can be replaced one-for-one with bespoke PNGs later.

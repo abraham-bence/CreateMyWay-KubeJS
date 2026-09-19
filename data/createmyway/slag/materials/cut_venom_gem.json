@@ -1,0 +1,30 @@
+{
+  "id": "createmyway:cut_venom_gem",
+  "cmw_role": "gem",
+  "cmw_display_name": "Cut Venom Gem",
+  "cmw_tier": "cut",
+  "cmw_equipment": [
+    "sword"
+  ],
+  "cmw_source_ingredient": "minecraft:spider_eye",
+  "cmw_effects": {
+    "sword": {
+      "status_effect": {
+        "id": "minecraft:poison",
+        "duration_ticks": 60,
+        "amplifier": 0
+      }
+    }
+  },
+  "defense": 4,
+  "durability": 80,
+  "enchantability": 24,
+  "sharpness": 5.5,
+  "speed": 1.8,
+  "tier": 0.0,
+  "texture": "metal",
+  "repair_ingredient": {
+    "item": "minecraft:spider_eye"
+  },
+  "sort_order": 200
+}

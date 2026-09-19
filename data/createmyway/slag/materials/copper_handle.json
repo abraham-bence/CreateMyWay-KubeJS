@@ -1,0 +1,25 @@
+{
+  "id": "createmyway:copper_handle",
+  "cmw_role": "handle",
+  "cmw_display_name": "Copper Handle",
+  "cmw_description": "An accessible early handle with balanced speed and durability.",
+  "cmw_equipment": [
+    "pickaxe",
+    "axe",
+    "shovel",
+    "hoe",
+    "sword"
+  ],
+  "defense": 4.0,
+  "durability": 288.0,
+  "enchantability": 10.0,
+  "sharpness": 4.5,
+  "speed": 10.0,
+  "tier": 0.0,
+  "texture": "metal",
+  "repair_ingredient": {
+    "tag": "c:ingots/copper"
+  },
+  "molten_fluid": "slag:molten_copper",
+  "sort_order": 39
+}

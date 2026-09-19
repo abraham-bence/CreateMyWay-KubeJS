@@ -1,0 +1,13 @@
+{
+  "actions": ["shovel", "isTool"],
+  "final_segment_stacks": [],
+  "id": "slag:shovel",
+  "item_tags": ["minecraft:shovels"],
+  "model_type": "handheld",
+  "segments": [
+    "slag:parts/shovel_heads",
+    "createmyway:parts/gems",
+    "createmyway:parts/handles"
+  ],
+  "sort_order": 0
+}
