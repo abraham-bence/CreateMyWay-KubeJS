@@ -59,6 +59,13 @@ function cmwInstalledGem(parts) {
   return null
 }
 
+// KubeJS remaps ItemStack.set() to a JSON-based component wrapper. Native
+// ResourceLocations and Slag's DataDynamicParts cannot pass through that wrapper.
+// The existing stack's mutable component map accepts these already-typed values.
+function cmwSetNativeComponent(stack, component, value) {
+  stack.getComponents().set(component, value)
+}
+
 function cmwEnchantmentHolder(level, id) {
   const registry = level.registryAccess().registryOrThrow($CmwRegistries.ENCHANTMENT)
   return registry.getHolder($CmwResourceLocation.parse(id)).orElse(null)
@@ -118,7 +125,7 @@ function cmwSocketedCopy(tool, gemPart, gem, equipment, level) {
   const parts = cmwParts(result).itemsCopy()
   const installedPart = gemPart.copy()
   installedPart.setCount(1)
-  installedPart.set($CmwAllDataComponents.BUILT.get(), $CmwResourceLocation.parse(`slag:${equipment}`))
+  cmwSetNativeComponent(installedPart, $CmwAllDataComponents.BUILT.get(), $CmwResourceLocation.parse(`slag:${equipment}`))
 
   let handleIndex = parts.size()
   for (let index = 0; index < parts.size(); index++) {
@@ -128,7 +135,7 @@ function cmwSocketedCopy(tool, gemPart, gem, equipment, level) {
     }
   }
   parts.add(handleIndex, installedPart)
-  result.set($CmwAllDataComponents.DYNAMIC_PARTS.get(), new $CmwDataDynamicParts(parts))
+  cmwSetNativeComponent(result, $CmwAllDataComponents.DYNAMIC_PARTS.get(), new $CmwDataDynamicParts(parts))
   cmwApplyGemEnchantments(result, gem, equipment, level)
   return result
 }
@@ -190,7 +197,7 @@ BlockEvents.rightClicked('create:mechanical_saw', event => {
   }
   if (!removed) return
 
-  tool.set($CmwAllDataComponents.DYNAMIC_PARTS.get(), new $CmwDataDynamicParts(remaining))
+  cmwSetNativeComponent(tool, $CmwAllDataComponents.DYNAMIC_PARTS.get(), new $CmwDataDynamicParts(remaining))
   cmwRestoreGemEnchantments(tool, event.level)
   removed.remove($CmwAllDataComponents.BUILT.get())
   removed.setCount(1)
