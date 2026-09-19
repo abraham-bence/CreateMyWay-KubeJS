@@ -36,6 +36,9 @@ jobs:
       - name: Test part and gem tooltip rendering
         run: node tests/test_part_tooltips.js
 
+      - name: Test sword gem installation and resocketing
+        run: node tests/test_gem_resocketing.js
+
       - name: Verify generated assets are current
         run: |
           python create_my_way_material_generator.py
