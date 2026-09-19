@@ -22,6 +22,12 @@ StartupEvents.registry('item', event => {
         .displayName('Incomplete Sword')
         .texture('minecraft:item/iron_sword')
 
+    // Unique Handle + S&E Guard combinations for the first sword stage.
+    event.create('sword_guard_core', 'create:sequenced_assembly')
+        .displayName('Sword Guard Core')
+        .texture('minecraft:item/iron_sword')
+
+    // Kept registered for old saves, but not used by the new sword system.
     event.create('equipment_grip_core', 'create:sequenced_assembly')
         .displayName('Equipment Grip Core')
         .texture('minecraft:item/blaze_rod')
@@ -50,7 +56,6 @@ StartupEvents.registry('item', event => {
 
     event.create('incomplete_boots', 'create:sequenced_assembly')
         .displayName('Incomplete Boots')
-        .texture('minecraft:item/iron_boots')
 })
 
 
@@ -92,7 +97,7 @@ StartupEvents.registry('item', event => {
  global.cmwIsInvalidEquipment = stack => {
 
      // Kept registered only so existing worlds do not lose the old item ID.
-     // The redesigned system no longer exposes or recipes the legacy grip core.
+     // The redesigned system never recipes or exposes the old gem/handle core.
      if (stack.id === 'kubejs:equipment_grip_core') {
          return true
      }
