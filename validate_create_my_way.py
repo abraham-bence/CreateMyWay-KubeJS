@@ -104,10 +104,15 @@ def main():
         "DYNAMIC_PARTS", "DataComponentIngredient", "getInventory()", "getBlockEntity().getLevel()",
         "cmwItemId", "registry.materialEquipment[gem]", "cmwInstalledGem(parts)",
     ))
-    require_markers("client_scripts/cmw_part_tooltips.js", (
-        "ItemEvents.modifyTooltips", "tooltip.dynamic('createmyway:part_details')",
-        "tooltip.dynamic('createmyway:equipment_details')", "Gem Socket: Empty",
+    tooltip_script = require_markers("client_scripts/cmw_part_tooltips.js", (
+        "ItemEvents.modifyTooltips", "tooltip.dynamic('createmyway:equipment_details')",
+        "Gem Socket: Empty", "Gem Socket: ${displayName(gemMaterial)}",
     ))
+    if any(marker in tooltip_script for marker in (
+        "tooltip.dynamic('createmyway:part_details')", "CreateMyWay Components",
+        "addEffectLines(", "Remove gem:", "Install:",
+    )):
+        fail("CreateMyWay custom tooltips must display gem socket status only")
 
     sword = json.loads((ROOT / "data/slag/slag/modulars/sword.json").read_text(encoding="utf-8"))
     expected_segments = ["slag:parts/sword_blades", "slag:parts/guards", "createmyway:parts/gems", "createmyway:parts/handles"]
