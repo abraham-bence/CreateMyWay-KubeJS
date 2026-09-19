@@ -19,8 +19,10 @@
   }
 
   function number(value) {
+    // KubeJS Rhino does not consistently expose Number.isFinite. The ES5
+    // global isFinite works there and with numeric values from Java objects.
     const numeric = Number(value)
-    return Number.isFinite(numeric) ? numeric.toFixed(2).replace(/\.?0+$/, '') : '?'
+    return isFinite(numeric) ? numeric.toFixed(2).replace(/\.?0+$/, '') : '?'
   }
 
   function roman(level) {
@@ -47,8 +49,8 @@
     return null
   }
 
-  // Describe what the effect actually does in the relevant equipment, rather
-  // than making players infer sword behavior from a generic enchantment list.
+  // Describe the effect for the actual equipment instead of expecting players
+  // to infer a sword's behavior from an unrelated utility-tool enchantment.
   function effectSummary(effect, equipment) {
     if (!effect) return ''
     const descriptions = []
@@ -71,23 +73,22 @@
   function addGemEffects(lines, registry, materialId) {
     const effects = (registry.materialEffects || {})[materialId] || {}
     const compatible = (registry.materialEquipment || {})[materialId] || []
+    const noAbility = 'No extra ability; contributes material stats only'
 
-    // Put sword information first: the material-stat section below can be long.
-    // Show a sword row even for stat-only gems (such as Lapis).
+    // Render the sword first. Avoid a block-scoped const here: repeated tooltip
+    // evaluation has triggered Rhino redeclaration errors in earlier scripts.
     if (compatible.includes('sword')) {
-      const swordEffect = effectSummary(effects.sword, 'sword')
-      lines.add(Text.of(`Sword: ${swordEffect || 'No extra ability; contributes material stats only'}`).green())
+      lines.add(Text.of(`Sword: ${effectSummary(effects.sword, 'sword') || noAbility}`).green())
     }
 
     const utilities = CMW_UTILITY_TOOLS.filter(kind => compatible.includes(kind))
     const summaries = utilities.map(kind => effectSummary(effects[kind], kind))
     const shared = summaries.length > 0 && summaries.every(summary => summary === summaries[0])
     if (shared) {
-      lines.add(Text.of(`Tools (${utilities.map(title).join(' / ')}): ${summaries[0] || 'No extra ability; contributes material stats only'}`).green())
+      lines.add(Text.of(`Tools (${utilities.map(title).join(' / ')}): ${summaries[0] || noAbility}`).green())
     } else {
       utilities.forEach(kind => {
-        const summary = effectSummary(effects[kind], kind)
-        lines.add(Text.of(`${title(kind)}: ${summary || 'No extra ability; contributes material stats only'}`).green())
+        lines.add(Text.of(`${title(kind)}: ${effectSummary(effects[kind], kind) || noAbility}`).green())
       })
     }
   }
