@@ -161,13 +161,12 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
     params => new $CmwDeployerRecipe(params),
     CMW_DYNAMIC_RECIPE_ID
   )
-  // Vanilla Ingredient.of(ItemStack) ignores components. Component-aware inputs
-  // ensure the result can never overwrite a different tool or gem variant.
-  const recipe = builder
-    .require($CmwComponentIngredient.of(true, tool.copy()))
-    .require($CmwComponentIngredient.of(true, gemPart.copy()))
-    .output(output)
-    .build()
+  // Create's builder overloads require(...) for ItemLike, Ingredient and fluid
+  // inputs. Rhino finds them ambiguous even when passed an Ingredient. Select
+  // the exact Ingredient overload while keeping full component-sensitive inputs.
+  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, tool.copy()))
+  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, gemPart.copy()))
+  const recipe = builder['output(net.minecraft.world.item.ItemStack)'](output).build()
   const holder = new $CmwRecipeHolder(CMW_DYNAMIC_RECIPE_ID, recipe)
   event.addRecipe(() => $CmwOptional.of(holder), 1000)
 })
