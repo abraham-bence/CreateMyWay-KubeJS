@@ -1,5 +1,12 @@
 // Data-driven tooltips for CreateMyWay components and finished equipment.
 (function () {
+  const $CmwTooltipComponents = Java.loadClass('dev.lopyluna.slag.register.AllDataComponents')
+
+  function componentId(stack, component) {
+    const value = stack.get(component.get())
+    return value ? String(value) : ''
+  }
+
   function number(value) {
     const numeric = Number(value)
     return Number.isInteger(numeric) ? String(numeric) : numeric.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
@@ -56,13 +63,20 @@
     }
   }
 
-  ItemEvents.dynamicTooltips('slag:dynamic_part', event => {
+  // dynamicTooltips takes a handler ID, NOT an item ID. Attach each handler to
+  // its actual item here; without this registration neither callback runs.
+  ItemEvents.modifyTooltips(event => {
+    event.modify('slag:dynamic_part', tooltip => tooltip.dynamic('createmyway:part_details'))
+    event.modify('slag:modular_item', tooltip => tooltip.dynamic('createmyway:equipment_details'))
+  })
+
+  ItemEvents.dynamicTooltips('createmyway:part_details', event => {
     const registry = global.cmwEquipmentRegistry
     if (!registry) return
 
     const stack = event.item
-    const material = String(stack.get('slag:material_type'))
-    const partId = String(stack.get('slag:part_type'))
+    const material = componentId(stack, $CmwTooltipComponents.MATERIAL_TYPE)
+    const partId = componentId(stack, $CmwTooltipComponents.PART_TYPE)
     if (registry.materialParts[material] !== partId) return
 
     const stats = registry.materialStats[material]
@@ -94,18 +108,20 @@
     addEffectLines(event.lines, registry, material)
   })
 
-  ItemEvents.dynamicTooltips('slag:modular_item', event => {
+  ItemEvents.dynamicTooltips('createmyway:equipment_details', event => {
     const registry = global.cmwEquipmentRegistry
-    const parts = event.item.get('slag:dynamic_parts')
-    if (!registry || !parts) return
+    if (!registry) return
+    const equipment = componentId(event.item, $CmwTooltipComponents.MODULAR_TYPE).replace(/^slag:/, '')
+    if (!['pickaxe', 'axe', 'shovel', 'hoe', 'sword'].includes(equipment)) return
 
-    let hasCustomPart = false
+    const parts = event.item.get($CmwTooltipComponents.DYNAMIC_PARTS.get())
+    if (!parts) return
+
     let gemMaterial = null
     const structuralParts = []
     for (const part of parts.items()) {
-      const material = String(part.get('slag:material_type'))
-      const partId = String(part.get('slag:part_type'))
-      if (registry.materialNames[material]) hasCustomPart = true
+      const material = componentId(part, $CmwTooltipComponents.MATERIAL_TYPE)
+      const partId = componentId(part, $CmwTooltipComponents.PART_TYPE)
       if (partId === 'createmyway:gem') gemMaterial = material
       if (partId === 'createmyway:handle') {
         structuralParts.push(['Handle', registry.materialNames[material] || title(material)])
@@ -117,7 +133,7 @@
         structuralParts.push(['Head', title(material)])
       }
     }
-    if (!hasCustomPart) return
+    if (!structuralParts.length) return
 
     event.lines.add(Text.of('CreateMyWay Components').gold())
     structuralParts.forEach(entry => {
