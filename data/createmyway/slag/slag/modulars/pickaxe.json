@@ -1,0 +1,18 @@
+{
+  "actions": [
+    "pickaxe",
+    "isTool"
+  ],
+  "final_segment_stacks": [],
+  "id": "slag:pickaxe",
+  "item_tags": [
+    "minecraft:pickaxes"
+  ],
+  "model_type": "handheld",
+  "segments": [
+    "slag:parts/pickaxe_heads",
+    "createmyway:parts/gems",
+    "createmyway:parts/handles"
+  ],
+  "sort_order": 1
+}

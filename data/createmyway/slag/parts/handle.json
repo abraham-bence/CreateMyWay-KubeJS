@@ -1,0 +1,8 @@
+{
+  "id": "createmyway:handle",
+  "segment_part": "createmyway:parts/handles",
+  "sort_order": 20,
+  "durability_modifier": 0.5,
+  "tier_modifier": 4.0,
+  "enchantability_modifier": 0.4
+}

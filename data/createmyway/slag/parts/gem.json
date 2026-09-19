@@ -1,0 +1,8 @@
+{
+  "id": "createmyway:gem",
+  "segment_part": "createmyway:parts/gems",
+  "sort_order": 19,
+  "durability_modifier": 0.5,
+  "tier_modifier": 4.0,
+  "enchantability_modifier": 0.4
+}

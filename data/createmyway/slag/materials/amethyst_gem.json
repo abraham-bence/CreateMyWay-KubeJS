@@ -1,0 +1,22 @@
+{
+  "id": "createmyway:amethyst_gem",
+
+  "defense": 5.0,
+  "durability": 44.8,
+  "enchantability": 54.0,
+  "sharpness": 5.5,
+
+  "speed": 2.1,
+  "tier": 0.0,
+
+  "texture": "metal",
+
+  "repair_ingredient": {
+    "tag": "c:gems/amethyst"
+  },
+
+  "molten_fluid": "slag:molten_amethyst",
+
+  "sort_order": 180,
+  "generate_acquisition_recipe": false
+}
