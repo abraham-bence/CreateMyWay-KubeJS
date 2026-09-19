@@ -1,0 +1,39 @@
+name: Validate CreateMyWay
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check Python syntax and structural invariants
+        run: |
+          python -m py_compile create_my_way_material_generator.py validate_create_my_way.py tools/build_cmw_textures.py
+          python validate_create_my_way.py
+
+      - name: Check KubeJS JavaScript syntax
+        run: |
+          find startup_scripts server_scripts client_scripts -name '*.js' -print0 | xargs -0 -n 1 node --check
+
+      - name: Verify generated assets are current
+        run: |
+          python create_my_way_material_generator.py
+          git diff --exit-code -- startup_scripts/generated_cmw_material_registry.js assets/createmyway/lang/en_us.json server_scripts/generated_cmw_material_recipes.js

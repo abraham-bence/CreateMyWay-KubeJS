@@ -8,7 +8,8 @@ This roadmap is the implementation contract for the current full-system pass. Th
 - The Python generator validates profiles and writes runtime registries, language entries, and acquisition/refinement recipes.
 - Abilities react only to relevant events. No player-tick or inventory-scan handlers are allowed.
 - Existing material IDs remain stable. `createmyway:amethyst_gem` is treated as Cut Amethyst to avoid invalidating existing items.
-- Plain Pickaxe/Axe/Shovel/Hoe recipes are Head + Handle. Plain swords are Blade + S&E Guard + Handle.
+- Plain Pickaxe/Axe/Shovel/Hoe recipes are Head + Handle.
+- Plain swords require a uniquely tagged Handle + existing S&E Guard core first, then Blade + core. The finished sword still contains the three real S&E parts.
 - Gems are optional upgrades installed later with a Create Deployer and removed with a powered Create Mechanical Saw.
 - Status gems are sword-only; utility gems support pickaxes, axes, shovels, hoes, and swords.
 - Balance values in this pass are a coherent first baseline, not a claim of final balance.
@@ -41,31 +42,32 @@ Sword status tiers refresh rather than stack:
 - Perfect gems: one-loop Sequenced Assembly from the Refined gem, consuming one additional source ingredient, then pressing and cutting.
 - Handles: Create: Metallurgy table casting with 45 mB of the profile's molten fluid and a graphite rod mold. Deep Alloy uses Create pressing; Wooden uses Create cutting from any plank.
 - Utility equipment: deploy a Handle onto an S&E Head, then press once.
-- Swords: deploy an existing S&E Guard and a Handle onto an S&E Blade, then press once.
-- Gem installation: put a plain finished tool on a belt/depot and use a Deployer holding a compatible gem.
+- Sword stage 1: start with a Handle, deploy an existing S&E Guard, and press to create a uniquely named and component-tagged Sword Guard Core. There are 17 guard materials × 9 handles = 153 cores.
+- Sword stage 2: start with that exact core, deploy the chosen S&E Blade, and press to create the finished three-part sword. The old blade-first sequence is no longer used.
+- Gem installation: put a plain finished tool on a belt/depot and use a Deployer holding a compatible gem. Its dynamic recipe uses component-aware inputs for the actual tool and gem, not a generic item ID.
 - Gem removal: hold the gemmed tool and right-click a powered Create Mechanical Saw. The exact gem is returned.
 - Installing or removing a gem preserves durability, custom names, unrelated components, and player enchantments. Gem-granted enchantments are restored safely when removed.
 
 ## Execution checklist
 
 - [x] Establish a generated material-role registry and shared creative/JEI filtering.
-- [x] Generate combination names automatically from material profiles (the old grip-core stage was later retired).
+- [x] Generate combination names automatically from material profiles (the old gem/handle grip-core stage was later retired).
 - [x] Prove profile-driven enchantment application with Cut and Refined Diamond.
 - [x] Upgrade the profile schema and generator for equipment compatibility, tier progression, and all ability types.
 - [x] Add Perfect Diamond and all Emerald, Quartz, Amethyst, Lapis, Rose Quartz, Echo, and status-gem profiles.
 - [x] Generate Cut → Refined → Perfect Create processing recipes.
 - [x] Add Obsidian and Diamond handles with casting recipes.
-- [x] Expand the first sword implementation, then migrate it to the final Blade + Guard + Handle socket design.
 - [x] Add event-driven status and Echo abilities.
 - [x] Add reach modifiers compatible with Better Combat.
 - [x] Repair incomplete-item and valid custom-part visuals.
 - [x] Add automated structural validation and verify generated recipe counts.
-- [x] Produce the final in-game test matrix and handoff notes.
 - [x] Add the ninth, Wooden Handle through Create cutting.
-- [x] Replace grip cores with plain Head + Handle utility-tool assembly.
-- [x] Replace sword assembly with Blade + existing S&E Guard + Handle.
-- [x] Add dynamic Create Deployer gem installation for every compatible tool/gem pair.
-- [x] Add powered Create Mechanical Saw gem removal and state preservation.
+- [x] Replace old gem/handle grip cores with plain Head + Handle utility-tool assembly.
+- [x] Implement two-stage Sword Guard Core → Blade sword recipes using S&E's existing guards.
+- [x] Register actual dynamic item tooltip handlers for parts and empty/occupied gem sockets.
+- [x] Match native Deployer ItemStacks and build component-exact socketing recipes.
+- [x] Add powered Create Mechanical Saw gem removal and state preservation logic.
+- [ ] Confirm revised socketing, tooltips, swords, and extraction in Minecraft following CREATE_MY_WAY_TESTING.md.
 
 ## Deferred until playtesting data exists
 
