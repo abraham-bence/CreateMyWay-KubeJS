@@ -2,18 +2,21 @@
 
 Use a **full Minecraft restart** for this release. Startup item registration, modular definitions, and native event listeners are not all covered by `/reload`. Test in a copy of an existing world when checking older equipment.
 
-## 1. Startup and visibility
+## 1. Startup, visibility and part comparison tooltips
 
 1. Start the instance and confirm there are no CreateMyWay errors in `logs/kubejs/startup.log`, `logs/kubejs/server.log`, `logs/kubejs/client.log`, or `logs/latest.log`.
-2. Confirm all 34 gems and nine handles have readable names and textures. Hover a gem and a handle and check their material descriptions.
-3. Confirm the legacy Equipment Grip Core still has no recipe and is hidden from JEI/EMI and the creative tab. The new Sword Guard Core is a **different item** and should remain available through its recipes.
-4. Confirm invalid material/part and status-gem/tool combinations remain hidden.
+2. Confirm all 34 gems and nine handles have readable names and textures. Hover each kind of part and verify the comparison tooltip uses the actual material's durability, mining speed, attack power, mining tier and enchantability, without presenting them as final equipment totals.
+3. Compare a Wooden Handle with a heavier handle, and a vanilla S&E head, blade and guard of different materials. Their tooltips must use the correct per-item material and per-part modifiers/bonuses; no data should carry over between hovered variants.
+4. Compare Cut, Refined and Perfect Emerald: check tier, compatible tools, and Fortune on utility tools versus Looting on swords. Check a sword-only status gem is labelled sword-only, including effect level and duration. Check Echo drop collection, Rose Quartz reach, and Lapis's stats-only indication. Hover an invalid/non-CMW part and verify it does not show fabricated material data.
+5. Finished tools must **still show only one added CreateMyWay line**, either `Gem Socket: Empty` or `Gem Socket: <gem name>`. The comparison heading, material stats and gem-effect breakdown belong on individual parts only.
+6. Confirm the legacy Equipment Grip Core still has no recipe and is hidden from JEI/EMI and the creative tab. The new Sword Guard Core is a **different item** and should remain available through its recipes.
+7. Confirm invalid material/part and status-gem/tool combinations remain hidden.
 
 ## 2. Parts, plain tools, and two-stage swords
 
 1. Cut any plank with Create to make the Wooden Handle.
 2. Spot-check the seven cast handles and the pressed Deep Alloy Handle.
-3. Assemble one of each plain utility tool. Each must use Head + Handle and show `Gem Socket: Empty` plus the Deployer instruction when hovered.
+3. Assemble one of each plain utility tool. Each must use Head + Handle and show `Gem Socket: Empty` as its only custom tooltip line.
 4. In JEI, verify that the first sword stage starts with a Handle, deploys an existing S&E Guard, then presses into a uniquely named Sword Guard Core. Expect 17 guards × 9 handles = **153** core recipes.
 5. Make two different guards with the **same** handle and two different handles with the **same** guard. Check that each produced core is uniquely named and not mixed up.
 6. Start the second sword stage with the exact core, deploy the chosen Blade, and press it into the finished sword. The final item must have Blade + Guard + Handle, no gem, and `Gem Socket: Empty` in its tooltip.
