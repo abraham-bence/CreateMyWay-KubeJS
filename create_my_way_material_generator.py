@@ -149,10 +149,10 @@ def profile_effects(material, file, equipment):
                 raise ValueError(f"{file.name}: amplifier must be zero or greater")
             clean["status_effect"] = status
         result[kind] = clean
-    # Pickaxe effects are the shared utility-tool effect definition. Expand
-    # them explicitly so runtime scripts remain simple and data-driven.
+    # Pickaxe effects are the shared utility-tool effect definition. Preserve
+    # the existing registry order instead of iterating an unordered Python set.
     if "pickaxe" in result:
-        for kind in TOOL_EQUIPMENT:
+        for kind in ("pickaxe", "shovel", "hoe", "axe"):
             if kind in equipment and kind not in result:
                 result[kind] = json.loads(json.dumps(result["pickaxe"]))
     return result
