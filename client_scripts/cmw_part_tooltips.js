@@ -47,51 +47,49 @@
     return null
   }
 
-  function effectSummary(effect) {
+  // Describe what the effect actually does in the relevant equipment, rather
+  // than making players infer sword behavior from a generic enchantment list.
+  function effectSummary(effect, equipment) {
     if (!effect) return ''
     const descriptions = []
     const enchantments = effect.enchantments || {}
     Object.keys(enchantments).forEach(id => {
-      descriptions.push(`${title(id)} ${roman(enchantments[id])}`)
+      descriptions.push(`Grants ${title(id)} ${roman(enchantments[id])}`)
     })
-    if (effect.block_reach) descriptions.push(`+${number(effect.block_reach)} block reach`)
-    if (effect.attack_reach) descriptions.push(`+${number(effect.attack_reach)} attack reach`)
-    if (effect.collect_drops) descriptions.push('Collects action drops')
+    if (effect.block_reach) descriptions.push(`While held: +${number(effect.block_reach)} block reach`)
+    if (effect.attack_reach) descriptions.push(`While held: +${number(effect.attack_reach)} attack reach`)
+    if (effect.collect_drops) descriptions.push(equipment === 'sword'
+      ? 'Mob drops from your kills go to your inventory'
+      : 'Mined block drops go to your inventory')
     if (effect.status_effect) {
-      descriptions.push(`${title(effect.status_effect.id)} ${roman(effect.status_effect.amplifier + 1)} (${number(effect.status_effect.duration_ticks / 20)}s)`)
+      descriptions.push(`On hit: ${title(effect.status_effect.id)} ${roman(effect.status_effect.amplifier + 1)} for ${number(effect.status_effect.duration_ticks / 20)}s`)
     }
-    if (effect.fire_seconds) descriptions.push(`Ignites targets (${number(effect.fire_seconds)}s)`)
-    return descriptions.join(', ')
+    if (effect.fire_seconds) descriptions.push(`On hit: ignites targets for ${number(effect.fire_seconds)}s`)
+    return descriptions.join('; ')
   }
 
   function addGemEffects(lines, registry, materialId) {
     const effects = (registry.materialEffects || {})[materialId] || {}
     const compatible = (registry.materialEquipment || {})[materialId] || []
-    const utilities = CMW_UTILITY_TOOLS.filter(kind => compatible.includes(kind))
-    const summaries = utilities.map(kind => effectSummary(effects[kind]))
-    const shared = summaries.length > 0 && summaries.every(summary => summary && summary === summaries[0])
-    let hasAbility = false
 
+    // Put sword information first: the material-stat section below can be long.
+    // Show a sword row even for stat-only gems (such as Lapis).
+    if (compatible.includes('sword')) {
+      const swordEffect = effectSummary(effects.sword, 'sword')
+      lines.add(Text.of(`Sword: ${swordEffect || 'No extra ability; contributes material stats only'}`).green())
+    }
+
+    const utilities = CMW_UTILITY_TOOLS.filter(kind => compatible.includes(kind))
+    const summaries = utilities.map(kind => effectSummary(effects[kind], kind))
+    const shared = summaries.length > 0 && summaries.every(summary => summary === summaries[0])
     if (shared) {
-      lines.add(Text.of(`  ${utilities.map(title).join(' / ')}: ${summaries[0]}`).green())
-      hasAbility = true
+      lines.add(Text.of(`Tools (${utilities.map(title).join(' / ')}): ${summaries[0] || 'No extra ability; contributes material stats only'}`).green())
     } else {
       utilities.forEach(kind => {
-        const summary = effectSummary(effects[kind])
-        if (summary) {
-          lines.add(Text.of(`  ${title(kind)}: ${summary}`).green())
-          hasAbility = true
-        }
+        const summary = effectSummary(effects[kind], kind)
+        lines.add(Text.of(`${title(kind)}: ${summary || 'No extra ability; contributes material stats only'}`).green())
       })
     }
-    if (compatible.includes('sword')) {
-      const swordEffect = effectSummary(effects.sword)
-      if (swordEffect) {
-        lines.add(Text.of(`  Sword: ${swordEffect}`).green())
-        hasAbility = true
-      }
-    }
-    if (!hasAbility) lines.add(Text.of('  No extra ability; compare material stats.').gray())
   }
 
   function materialStats(materialId, registry) {
@@ -153,6 +151,8 @@
     if (gem) {
       event.lines.add(Text.of(`Quality: ${title(registry.materialTiers[materialId] || 'single')}`).aqua())
       event.lines.add(Text.of(`Compatible with: ${(registry.materialEquipment[materialId] || []).map(title).join(', ')}`).aqua())
+      event.lines.add(Text.of('Gem abilities by equipment:').aqua())
+      addGemEffects(event.lines, registry, materialId)
     }
     event.lines.add(Text.of('Material values (not final equipment stats):').darkGray())
     event.lines.add(Text.of(`  Durability ${number(stats.durability)}  |  Mining speed ${number(stats.miningSpeed)}`).gray())
@@ -160,10 +160,6 @@
     event.lines.add(Text.of(`  Enchantability ${number(stats.enchantability)}`).gray())
     if (stats.fireproof) event.lines.add(Text.of('  Fireproof material').red())
     addPartProperties(event.lines, partId)
-    if (gem) {
-      event.lines.add(Text.of('Gem abilities by equipment:').aqua())
-      addGemEffects(event.lines, registry, materialId)
-    }
     event.lines.add(Text.of('Final stats depend on all installed parts and their modifiers.').darkGray())
   })
 
