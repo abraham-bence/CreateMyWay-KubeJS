@@ -20,8 +20,19 @@ const $CmwMutableEnchantments = Java.loadClass('net.minecraft.world.item.enchant
 const $CmwInteractionHand = Java.loadClass('net.minecraft.world.InteractionHand')
 
 const CMW_SOCKET_DATA = 'cmw_socket'
-const CMW_DYNAMIC_RECIPE_ID = $CmwResourceLocation.parse('createmyway:dynamic_gem_socketing')
 const CMW_EQUIPMENT_TYPES = ['pickaxe', 'axe', 'shovel', 'hoe', 'sword']
+let cmwSocketRecipeSequence = 0
+
+// These recipes are created on demand, not registered with the recipe manager.
+// Reusing the same ID for a different gem/output can return a previous recipe
+// in consumers that cache by ID. Include the gem AND a per-search sequence so
+// a resocketed sword cannot reuse a prior output, even with the same gem.
+function cmwSocketRecipeId(equipment, gem) {
+  cmwSocketRecipeSequence += 1
+  return $CmwResourceLocation.parse(
+    `createmyway:dynamic_gem_socketing/${equipment}/${gem.split(':')[1]}/${cmwSocketRecipeSequence}`
+  )
+}
 
 // DeployerRecipeSearchEvent supplies native Minecraft ItemStacks, not necessarily
 // KubeJS-wrapped event items. Resolve IDs through the vanilla item registry.
@@ -157,9 +168,16 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   const level = event.getBlockEntity().getLevel()
   if (!level || level.isClientSide()) return
   const output = cmwSocketedCopy(tool, gemPart, gem, equipment, level)
+  const outputGem = cmwInstalledGem(cmwParts(output))
+  if (!outputGem || cmwGemFromPart(outputGem) !== gem) {
+    console.error(`[CreateMyWay] Gem socket result does not match held gem ${gem}; refusing recipe.`)
+    return
+  }
+
+  const recipeId = cmwSocketRecipeId(equipment, gem)
   const builder = new $CmwItemApplicationBuilder(
     params => new $CmwDeployerRecipe(params),
-    CMW_DYNAMIC_RECIPE_ID
+    recipeId
   )
   // Create's builder overloads require(...) for ItemLike, Ingredient and fluid
   // inputs. Rhino finds them ambiguous even when passed an Ingredient. Select
@@ -167,7 +185,7 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, tool.copy()))
   builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, gemPart.copy()))
   const recipe = builder['output(net.minecraft.world.item.ItemStack)'](output).build()
-  const holder = new $CmwRecipeHolder(CMW_DYNAMIC_RECIPE_ID, recipe)
+  const holder = new $CmwRecipeHolder(recipeId, recipe)
   event.addRecipe(() => $CmwOptional.of(holder), 1000)
 })
 
