@@ -1,11 +1,12 @@
-// Dynamic Create gem socketing. Copying the processed stack preserves damage,
-// custom names, ordinary components, and player-added enchantments.
+// Dynamic Create gem socketing. Each recipe is built from the actual tool stack
+// to preserve its damage, custom name, components, and player enchantments.
 
 const $CmwDeployerRecipeSearchEvent = Java.loadClass('com.simibubi.create.content.kinetics.deployer.DeployerRecipeSearchEvent')
 const $CmwDeployerRecipe = Java.loadClass('com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe')
 const $CmwItemApplicationBuilder = Java.loadClass('com.simibubi.create.content.kinetics.deployer.ItemApplicationRecipe$Builder')
 const $CmwRecipeHolder = Java.loadClass('net.minecraft.world.item.crafting.RecipeHolder')
-const $CmwIngredient = Java.loadClass('net.minecraft.world.item.crafting.Ingredient')
+const $CmwComponentIngredient = Java.loadClass('net.neoforged.neoforge.common.crafting.DataComponentIngredient')
+const $CmwBuiltInRegistries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
 const $CmwOptional = Java.loadClass('java.util.Optional')
 const $CmwResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation')
 const $CmwDataDynamicParts = Java.loadClass('dev.lopyluna.slag.content.items.modular.DataDynamicParts')
@@ -20,22 +21,31 @@ const $CmwInteractionHand = Java.loadClass('net.minecraft.world.InteractionHand'
 
 const CMW_SOCKET_DATA = 'cmw_socket'
 const CMW_DYNAMIC_RECIPE_ID = $CmwResourceLocation.parse('createmyway:dynamic_gem_socketing')
+const CMW_EQUIPMENT_TYPES = ['pickaxe', 'axe', 'shovel', 'hoe', 'sword']
+
+// DeployerRecipeSearchEvent supplies native Minecraft ItemStacks, not necessarily
+// KubeJS-wrapped event items. Resolve IDs through the vanilla item registry.
+function cmwItemId(stack) {
+  return stack && !stack.isEmpty() ? String($CmwBuiltInRegistries.ITEM.getKey(stack.getItem())) : ''
+}
 
 function cmwEquipmentType(stack) {
-  if (!stack || stack.empty || stack.id !== 'slag:modular_item') return null
+  if (cmwItemId(stack) !== 'slag:modular_item') return null
   const value = stack.get($CmwAllDataComponents.MODULAR_TYPE.get())
-  return value ? String(value).replace(/^slag:/, '') : null
+  const equipment = value ? String(value).replace(/^slag:/, '') : ''
+  return CMW_EQUIPMENT_TYPES.includes(equipment) ? equipment : null
 }
 
 function cmwParts(stack) {
+  if (cmwItemId(stack) !== 'slag:modular_item') return null
   return stack.get($CmwAllDataComponents.DYNAMIC_PARTS.get())
 }
 
 function cmwGemFromPart(stack) {
-  if (!stack || stack.empty || stack.id !== 'slag:dynamic_part') return null
+  if (cmwItemId(stack) !== 'slag:dynamic_part') return null
   const part = stack.get($CmwAllDataComponents.PART_TYPE.get())
   const material = stack.get($CmwAllDataComponents.MATERIAL_TYPE.get())
-  if (String(part) !== 'createmyway:gem' || !material) return null
+  if (!material || String(part) !== 'createmyway:gem') return null
   return String(material)
 }
 
@@ -96,7 +106,7 @@ function cmwRestoreGemEnchantments(stack, level) {
     const current = mutable.getLevel(holder)
     const granted = grantedTag.getInt(String(id))
     const previous = previousTag.getInt(String(id))
-    // Preserve an enchantment if the player upgraded it after socketing.
+    // Keep any enchantment the player upgraded above the socket's granted level.
     if (current <= granted) mutable.set(holder, previous)
   })
   $CmwEnchantmentHelper.setEnchantments(stack, mutable.toImmutable())
@@ -124,25 +134,31 @@ function cmwSocketedCopy(tool, gemPart, gem, equipment, level) {
 }
 
 NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
-  const inventory = event.inventory
+  const inventory = event.getInventory()
   const tool = inventory.getItem(0)
   const gemPart = inventory.getItem(1)
-  const gem = cmwGemFromPart(gemPart)
-  const equipment = cmwEquipmentType(tool)
   const registry = global.cmwEquipmentRegistry
+  if (!registry) return
 
-  if (!registry || !gem || !equipment || !cmwParts(tool)) return
-  if (cmwInstalledGem(cmwParts(tool))) return
+  const equipment = cmwEquipmentType(tool)
+  const gem = cmwGemFromPart(gemPart)
+  if (!equipment || !gem || registry.materialParts[gem] !== 'createmyway:gem') return
+  const parts = cmwParts(tool)
+  if (!parts || parts.isEmpty() || cmwInstalledGem(parts)) return
   if (!(registry.materialEquipment[gem] || []).includes(equipment)) return
 
-  const output = cmwSocketedCopy(tool, gemPart, gem, equipment, event.blockEntity.level)
+  const level = event.getBlockEntity().getLevel()
+  if (!level || level.isClientSide()) return
+  const output = cmwSocketedCopy(tool, gemPart, gem, equipment, level)
   const builder = new $CmwItemApplicationBuilder(
     params => new $CmwDeployerRecipe(params),
     CMW_DYNAMIC_RECIPE_ID
   )
+  // Vanilla Ingredient.of(ItemStack) ignores components. Component-aware inputs
+  // ensure the result can never overwrite a different tool or gem variant.
   const recipe = builder
-    .require($CmwIngredient.of(tool.copy()))
-    .require($CmwIngredient.of(gemPart.copy()))
+    .require($CmwComponentIngredient.of(true, tool.copy()))
+    .require($CmwComponentIngredient.of(true, gemPart.copy()))
     .output(output)
     .build()
   const holder = new $CmwRecipeHolder(CMW_DYNAMIC_RECIPE_ID, recipe)
