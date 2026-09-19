@@ -13,6 +13,14 @@ def fail(message):
     raise SystemExit(1)
 
 
+def require_markers(path, markers):
+    text = (ROOT / path).read_text(encoding="utf-8")
+    for marker in markers:
+        if marker not in text:
+            fail(f"{path} is missing {marker}")
+    return text
+
+
 def main():
     profiles = [json.loads(p.read_text(encoding="utf-8-sig")) for p in sorted(MATERIALS.glob("*.json"))]
     ids = [p["id"] for p in profiles]
@@ -28,7 +36,7 @@ def main():
         "createmyway:deep_alloy_handle", "createmyway:netherite_handle",
     }
     if len(gems) != 34 or {p["id"] for p in handles} != expected_handles:
-        fail(f"expected 34 gems and the nine planned handles, found {len(gems)} and {len(handles)}")
+        fail(f"expected 34 gems and nine planned handles, found {len(gems)} and {len(handles)}")
 
     registry_text = (ROOT / "startup_scripts/generated_cmw_material_registry.js").read_text(encoding="utf-8")
     match = re.search(r"global\.cmwEquipmentRegistry\s*=\s*(\{.*\})\s*$", registry_text, re.S)
@@ -46,10 +54,8 @@ def main():
     gem_counts = {kind: sum(kind in p.get("cmw_equipment", []) for p in gems) for kind in equipment_types}
     expected_counts = {"pickaxe": 19, "axe": 19, "shovel": 19, "hoe": 19, "sword": 34}
     plain_recipe_counts = {
-        "pickaxe": 17 * len(handles),
-        "axe": 17 * len(handles),
-        "shovel": 17 * len(handles),
-        "hoe": 17 * len(handles),
+        "pickaxe": 17 * len(handles), "axe": 17 * len(handles),
+        "shovel": 17 * len(handles), "hoe": 17 * len(handles),
         "sword": 17 * 17 * len(handles),
     }
     sword_core_count = 17 * len(handles)
@@ -80,40 +86,28 @@ def main():
     if texture_count != 198:
         fail(f"expected 198 valid custom-part texture layers, found {texture_count}")
 
-    equipment_script = (ROOT / "server_scripts/modular_equipments.js").read_text(encoding="utf-8")
-    if "equipment_grip_core" in equipment_script or "cmw_gem" in equipment_script:
-        fail("plain equipment assembly still contains legacy gem/handle grip-core or gem logic")
-    for marker in (
+    equipment_script = require_markers("server_scripts/modular_equipments.js", (
         "'slag:guard'", "cmw_guard", "sword_guard_core", "coreAssembly",
         "swordCores.push", "Ingredient.of(core.coreStack)", "[assemblyStack, blade]",
-    ):
-        if marker not in equipment_script:
-            fail(f"two-stage sword assembly is missing {marker}")
-    if equipment_script.count("_sword_guard_core`) != 1:
+    ))
+    if "equipment_grip_core" in equipment_script or "cmw_gem" in equipment_script:
+        fail("plain equipment assembly contains legacy gem/handle grip cores or gem logic")
+    if equipment_script.count("_sword_guard_core`") != 1:
         fail("sword guard core recipe ID is missing or duplicated")
 
-    startup_script = (ROOT / "startup_scripts/main.js").read_text(encoding="utf-8")
-    if "event.create('sword_guard_core'" not in startup_script:
-        fail("sword guard core item is not registered")
-    jei_script = (ROOT / "client_scripts/slag_jei_visibility.js").read_text(encoding="utf-8")
-    if "event.useComponents('kubejs:sword_guard_core', 'custom_data')" not in jei_script:
-        fail("JEI does not distinguish sword guard core variants")
-
-    socket_script = (ROOT / "server_scripts/cmw_gem_socketing.js").read_text(encoding="utf-8")
-    for marker in (
+    require_markers("startup_scripts/main.js", ("event.create('sword_guard_core'",))
+    require_markers("client_scripts/slag_jei_visibility.js", (
+        "event.useComponents('kubejs:sword_guard_core', 'custom_data')",
+    ))
+    require_markers("server_scripts/cmw_gem_socketing.js", (
         "DeployerRecipeSearchEvent", "create:mechanical_saw", "previous_enchantments",
         "DYNAMIC_PARTS", "DataComponentIngredient", "getInventory()", "getBlockEntity().getLevel()",
         "cmwItemId", "registry.materialEquipment[gem]", "cmwInstalledGem(parts)",
-    ):
-        if marker not in socket_script:
-            fail(f"gem socketing script is missing {marker}")
-    tooltip_script = (ROOT / "client_scripts/cmw_part_tooltips.js").read_text(encoding="utf-8")
-    for marker in (
+    ))
+    require_markers("client_scripts/cmw_part_tooltips.js", (
         "ItemEvents.modifyTooltips", "tooltip.dynamic('createmyway:part_details')",
         "tooltip.dynamic('createmyway:equipment_details')", "Gem Socket: Empty",
-    ):
-        if marker not in tooltip_script:
-            fail(f"dynamic tooltips are not registered correctly: missing {marker}")
+    ))
 
     sword = json.loads((ROOT / "data/slag/slag/modulars/sword.json").read_text(encoding="utf-8"))
     expected_segments = ["slag:parts/sword_blades", "slag:parts/guards", "createmyway:parts/gems", "createmyway:parts/handles"]
