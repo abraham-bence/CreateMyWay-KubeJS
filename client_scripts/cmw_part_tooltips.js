@@ -33,8 +33,9 @@
     if (effect.attack_reach) lines.push(`+${number(effect.attack_reach)} Attack Reach`)
     if (effect.collect_drops) lines.push('Collects action drops directly')
     if (effect.status_effect) {
-      const status = effect.status_effect
-      lines.push(`${title(status.id)} ${roman(status.amplifier + 1)} for ${number(status.duration_ticks / 20)}s`)
+      // Rhino may redeclare a block-scoped variable on repeated tooltip calls.
+      // Read the status data directly instead of declaring one in this block.
+      lines.push(`${title(effect.status_effect.id)} ${roman(effect.status_effect.amplifier + 1)} for ${number(effect.status_effect.duration_ticks / 20)}s`)
     }
     if (effect.fire_seconds) lines.push(`Ignites targets for ${number(effect.fire_seconds)}s`)
     return lines
