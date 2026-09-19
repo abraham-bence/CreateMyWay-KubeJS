@@ -40,7 +40,7 @@ def main():
     if set(registry["partStats"]) != {"gem", "handle"}:
         fail("generated tooltip metadata is missing gem or handle part stats")
     if "gripCoreNames" in registry or "equipmentAssemblyNames" in registry:
-        fail("legacy grip-core assembly metadata is still present")
+        fail("legacy gem/handle grip-core metadata is still present")
 
     equipment_types = ("pickaxe", "axe", "shovel", "hoe", "sword")
     gem_counts = {kind: sum(kind in p.get("cmw_equipment", []) for p in gems) for kind in equipment_types}
@@ -52,9 +52,10 @@ def main():
         "hoe": 17 * len(handles),
         "sword": 17 * 17 * len(handles),
     }
+    sword_core_count = 17 * len(handles)
     expected_plain_recipes = {"pickaxe": 153, "axe": 153, "shovel": 153, "hoe": 153, "sword": 2601}
-    if gem_counts != expected_counts or plain_recipe_counts != expected_plain_recipes:
-        fail("plain equipment or gem compatibility matrix has unexpected dimensions")
+    if gem_counts != expected_counts or plain_recipe_counts != expected_plain_recipes or sword_core_count != 153:
+        fail("plain equipment, sword cores or gem compatibility matrix has unexpected dimensions")
 
     generated_recipes = (ROOT / "server_scripts/generated_cmw_material_recipes.js").read_text(encoding="utf-8")
     if generated_recipes.count(".id(\"createmyway:form_") != 43:
@@ -81,13 +82,38 @@ def main():
 
     equipment_script = (ROOT / "server_scripts/modular_equipments.js").read_text(encoding="utf-8")
     if "equipment_grip_core" in equipment_script or "cmw_gem" in equipment_script:
-        fail("plain equipment assembly still contains legacy grip-core or gem logic")
-    if "'slag:guard'" not in equipment_script or "cmw_guard" not in equipment_script:
-        fail("plain sword assembly does not use S&E guards")
+        fail("plain equipment assembly still contains legacy gem/handle grip-core or gem logic")
+    for marker in (
+        "'slag:guard'", "cmw_guard", "sword_guard_core", "coreAssembly",
+        "swordCores.push", "Ingredient.of(core.coreStack)", "[assemblyStack, blade]",
+    ):
+        if marker not in equipment_script:
+            fail(f"two-stage sword assembly is missing {marker}")
+    if equipment_script.count("_sword_guard_core`) != 1:
+        fail("sword guard core recipe ID is missing or duplicated")
+
+    startup_script = (ROOT / "startup_scripts/main.js").read_text(encoding="utf-8")
+    if "event.create('sword_guard_core'" not in startup_script:
+        fail("sword guard core item is not registered")
+    jei_script = (ROOT / "client_scripts/slag_jei_visibility.js").read_text(encoding="utf-8")
+    if "event.useComponents('kubejs:sword_guard_core', 'custom_data')" not in jei_script:
+        fail("JEI does not distinguish sword guard core variants")
+
     socket_script = (ROOT / "server_scripts/cmw_gem_socketing.js").read_text(encoding="utf-8")
-    for marker in ("DeployerRecipeSearchEvent", "create:mechanical_saw", "previous_enchantments", "DYNAMIC_PARTS"):
+    for marker in (
+        "DeployerRecipeSearchEvent", "create:mechanical_saw", "previous_enchantments",
+        "DYNAMIC_PARTS", "DataComponentIngredient", "getInventory()", "getBlockEntity().getLevel()",
+        "cmwItemId", "registry.materialEquipment[gem]", "cmwInstalledGem(parts)",
+    ):
         if marker not in socket_script:
             fail(f"gem socketing script is missing {marker}")
+    tooltip_script = (ROOT / "client_scripts/cmw_part_tooltips.js").read_text(encoding="utf-8")
+    for marker in (
+        "ItemEvents.modifyTooltips", "tooltip.dynamic('createmyway:part_details')",
+        "tooltip.dynamic('createmyway:equipment_details')", "Gem Socket: Empty",
+    ):
+        if marker not in tooltip_script:
+            fail(f"dynamic tooltips are not registered correctly: missing {marker}")
 
     sword = json.loads((ROOT / "data/slag/slag/modulars/sword.json").read_text(encoding="utf-8"))
     expected_segments = ["slag:parts/sword_blades", "slag:parts/guards", "createmyway:parts/gems", "createmyway:parts/handles"]
@@ -110,9 +136,10 @@ def main():
             fail(f"missing required file: {relative}")
 
     print("CreateMyWay validation passed")
-    print(f"  profiles: 43 (34 gems, 9 handles)")
+    print("  profiles: 43 (34 gems, 9 handles)")
     print(f"  plain equipment recipes: {sum(plain_recipe_counts.values())}")
     print("    " + ", ".join(f"{count} {kind}s" for kind, count in plain_recipe_counts.items()))
+    print(f"  sword guard core recipes: {sword_core_count}")
     print("  gem installation: dynamic Create Deployer recipe")
     print("  gem removal: powered Create Mechanical Saw interaction")
     print(f"  valid custom-part texture layers: {texture_count}")
