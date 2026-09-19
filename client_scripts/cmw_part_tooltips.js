@@ -33,8 +33,7 @@
     if (effect.attack_reach) lines.push(`+${number(effect.attack_reach)} Attack Reach`)
     if (effect.collect_drops) lines.push('Collects action drops directly')
     if (effect.status_effect) {
-      // Rhino may redeclare a block-scoped variable on repeated tooltip calls.
-      // Read the status data directly instead of declaring one in this block.
+      // Keep block-scoped bindings out of repeatedly evaluated Rhino blocks.
       lines.push(`${title(effect.status_effect.id)} ${roman(effect.status_effect.amplifier + 1)} for ${number(effect.status_effect.duration_ticks / 20)}s`)
     }
     if (effect.fire_seconds) lines.push(`Ignites targets for ${number(effect.fire_seconds)}s`)
@@ -62,6 +61,21 @@
     if (swordSummary.length) {
       lines.add(Text.of(`Sword: ${swordSummary.join(', ')}`).green())
     }
+  }
+
+  // Called once per part, so the per-part const bindings never get redeclared
+  // inside Rhino's repeatedly executed for-of loop scope.
+  function describeEquipmentPart(part, registry) {
+    const material = componentId(part, $CmwTooltipComponents.MATERIAL_TYPE)
+    const partId = componentId(part, $CmwTooltipComponents.PART_TYPE)
+    if (partId === 'createmyway:gem') return { gem: material }
+    if (partId === 'createmyway:handle') {
+      return { label: 'Handle', name: registry.materialNames[material] || title(material) }
+    }
+    if (partId === 'slag:guard') return { label: 'Guard', name: title(material) }
+    if (partId === 'slag:sword_blade') return { label: 'Blade', name: title(material) }
+    if (partId.endsWith('_head')) return { label: 'Head', name: title(material) }
+    return null
   }
 
   // dynamicTooltips takes a handler ID, NOT an item ID. Attach each handler to
@@ -118,27 +132,18 @@
     const parts = event.item.get($CmwTooltipComponents.DYNAMIC_PARTS.get())
     if (!parts) return
 
-    let gemMaterial = null
-    const structuralParts = []
+    const details = []
     for (const part of parts.items()) {
-      const material = componentId(part, $CmwTooltipComponents.MATERIAL_TYPE)
-      const partId = componentId(part, $CmwTooltipComponents.PART_TYPE)
-      if (partId === 'createmyway:gem') gemMaterial = material
-      if (partId === 'createmyway:handle') {
-        structuralParts.push(['Handle', registry.materialNames[material] || title(material)])
-      } else if (partId === 'slag:guard') {
-        structuralParts.push(['Guard', title(material)])
-      } else if (partId === 'slag:sword_blade') {
-        structuralParts.push(['Blade', title(material)])
-      } else if (partId.endsWith('_head')) {
-        structuralParts.push(['Head', title(material)])
-      }
+      details.push(describeEquipmentPart(part, registry))
     }
+    const gemInfo = details.find(info => info && info.gem)
+    const gemMaterial = gemInfo ? gemInfo.gem : null
+    const structuralParts = details.filter(info => info && info.label)
     if (!structuralParts.length) return
 
     event.lines.add(Text.of('CreateMyWay Components').gold())
     structuralParts.forEach(entry => {
-      event.lines.add(Text.of(`  ${entry[0]}: ${entry[1]}`).gray())
+      event.lines.add(Text.of(`  ${entry.label}: ${entry.name}`).gray())
     })
     if (gemMaterial) {
       event.lines.add(Text.of(`  Gem Socket: ${registry.materialNames[gemMaterial] || title(gemMaterial)}`).aqua())
