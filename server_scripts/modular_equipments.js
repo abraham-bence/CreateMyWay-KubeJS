@@ -82,31 +82,53 @@ ServerEvents.recipes(event => {
     })
   })
 
-  // Plain swords use S&E's existing Blade + Guard parts plus a CreateMyWay Handle.
-  baseMaterials.forEach(bladeMaterial => {
-    const bladeMaterialId = `slag:${bladeMaterial}`
-    const blade = Ingredient.of(dynamicPart(bladeMaterialId, 'slag:sword_blade'))
+  // Step 1: Handle + S&E Guard -> uniquely component-tagged Sword Guard Core.
+  // Every handle/guard pair has a distinct first Deployer operation; no gem
+  // or blade is required to construct the reusable structural core.
+  const swordCores = []
+  handles.filter(handle => allows(handle, 'sword')).forEach(handle => {
+    const handleIngredient = Ingredient.of(dynamicPart(handle, 'createmyway:handle'))
     baseMaterials.forEach(guardMaterial => {
       const guardMaterialId = `slag:${guardMaterial}`
       const guard = Ingredient.of(dynamicPart(guardMaterialId, 'slag:guard'))
-      handles.filter(handle => allows(handle, 'sword')).forEach(handle => {
-        const handleIngredient = Ingredient.of(dynamicPart(handle, 'createmyway:handle'))
-        const assembly = `kubejs:incomplete_sword[minecraft:custom_data={cmw_equipment:"sword",cmw_blade:"${bladeMaterialId}",cmw_guard:"${guardMaterialId}",cmw_handle:"${handle}",cmw_stage:"plain_assembly"}]`
-        const assemblyName = `${title(bladeMaterial)} Blade + ${title(guardMaterial)} Guard + ${registry.materialNames[handle]} Sword Assembly`
-        const assemblyStack = Item.of(assembly).withCustomName(assemblyName)
-        const finished = modularItem('sword', [
-          builtPart('sword', bladeMaterialId, 'slag:sword_blade'),
-          builtPart('sword', guardMaterialId, 'slag:guard'),
-          builtPart('sword', handle, 'createmyway:handle')
-        ])
+      const coreData = `cmw_guard:"${guardMaterialId}",cmw_handle:"${handle}"`
+      const coreName = `${registry.materialNames[handle]} + ${title(guardMaterial)} Guard Sword Core`
+      const coreStack = Item.of(`kubejs:sword_guard_core[minecraft:custom_data={${coreData}}]`)
+        .withCustomName(coreName)
+      const coreAssembly = Item.of(`kubejs:sword_guard_core[minecraft:custom_data={${coreData},cmw_stage:"guard_assembly"}]`)
+        .withCustomName(`${coreName} Assembly`)
 
-        event.recipes.create.sequenced_assembly([finished], blade, [
-          event.recipes.create.deploying(assemblyStack, [assemblyStack, guard]),
-          event.recipes.create.deploying(assemblyStack, [assemblyStack, handleIngredient]),
-          event.recipes.create.pressing(assemblyStack, assemblyStack)
-        ]).transitionalItem(assemblyStack).loops(1)
-          .id(`createmyway:${bladeMaterial}_${guardMaterial}_${materialPath(handle)}_sword_assembly`)
-      })
+      event.recipes.create.sequenced_assembly([coreStack], handleIngredient, [
+        event.recipes.create.deploying(coreAssembly, [coreAssembly, guard]),
+        event.recipes.create.pressing(coreAssembly, coreAssembly)
+      ]).transitionalItem(coreAssembly).loops(1)
+        .id(`createmyway:${guardMaterial}_${materialPath(handle)}_sword_guard_core`)
+
+      swordCores.push({ handle, guardMaterialId, guardMaterial, coreStack })
+    })
+  })
+
+  // Step 2: The exact Sword Guard Core receives its Blade, then is pressed.
+  // This distinguishes every Blade x Guard x Handle combination immediately.
+  swordCores.forEach(core => {
+    const coreIngredient = Ingredient.of(core.coreStack)
+    baseMaterials.forEach(bladeMaterial => {
+      const bladeMaterialId = `slag:${bladeMaterial}`
+      const blade = Ingredient.of(dynamicPart(bladeMaterialId, 'slag:sword_blade'))
+      const assembly = `kubejs:incomplete_sword[minecraft:custom_data={cmw_blade:"${bladeMaterialId}",cmw_guard:"${core.guardMaterialId}",cmw_handle:"${core.handle}",cmw_stage:"blade_assembly"}]`
+      const assemblyName = `${title(bladeMaterial)} Blade + ${title(core.guardMaterial)} Guard + ${registry.materialNames[core.handle]} Sword Assembly`
+      const assemblyStack = Item.of(assembly).withCustomName(assemblyName)
+      const finished = modularItem('sword', [
+        builtPart('sword', bladeMaterialId, 'slag:sword_blade'),
+        builtPart('sword', core.guardMaterialId, 'slag:guard'),
+        builtPart('sword', core.handle, 'createmyway:handle')
+      ])
+
+      event.recipes.create.sequenced_assembly([finished], coreIngredient, [
+        event.recipes.create.deploying(assemblyStack, [assemblyStack, blade]),
+        event.recipes.create.pressing(assemblyStack, assemblyStack)
+      ]).transitionalItem(assemblyStack).loops(1)
+        .id(`createmyway:${bladeMaterial}_${core.guardMaterial}_${materialPath(core.handle)}_sword_assembly`)
     })
   })
 })
