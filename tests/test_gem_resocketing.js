@@ -84,7 +84,10 @@ class RecipeBuilder {
     this.output = output
     return this
   }
-  build() { return { inputs: this.inputs, output: this.output } }
+  build() { return this }
+  // Create's ProcessingRecipe rolls this supplier when applying the recipe.
+  enforceNextResult(supplier) { this.forcedResult = supplier }
+  rollResults() { return this.forcedResult ? this.forcedResult() : this.output.copy() }
 }
 
 let searchRecipe
@@ -126,14 +129,21 @@ const javaClasses = {
   'net.minecraft.world.InteractionHand': { MAIN_HAND: 'MAIN_HAND' }
 }
 
-const first = 'createmyway:perfect_rose_quartz_gem'
-const second = 'createmyway:cut_venom_gem'
+const rose = 'createmyway:perfect_rose_quartz_gem'
+const diamond = 'createmyway:cut_diamond_gem'
+const equipmentTypes = ['pickaxe', 'axe', 'shovel', 'hoe', 'sword']
 const registry = {
-  materialParts: { [first]: 'createmyway:gem', [second]: 'createmyway:gem' },
-  materialEquipment: { [first]: ['sword'], [second]: ['sword'] },
-  materialEffects: { [first]: {}, [second]: {} }
+  materialParts: { [rose]: 'createmyway:gem', [diamond]: 'createmyway:gem' },
+  materialEquipment: { [rose]: equipmentTypes, [diamond]: equipmentTypes },
+  materialEffects: { [rose]: {}, [diamond]: {} }
 }
 const level = { isClientSide: () => false }
+let heldPart = null
+let currentTool = null
+const deployer = {
+  getLevel: () => level,
+  getPlayer: () => ({ getMainHandItem: () => heldPart })
+}
 const context = vm.createContext({
   Java: { loadClass(name) {
     assert(Object.hasOwn(javaClasses, name), `Unknown Java class: ${name}`)
@@ -152,42 +162,55 @@ assert.equal(typeof removeWithSaw, 'function')
 function part(material, type) {
   return new Stack('slag:dynamic_part', { PART_TYPE: type, MATERIAL_TYPE: material })
 }
-const sword = new Stack('slag:modular_item', {
-  MODULAR_TYPE: 'slag:sword',
-  DYNAMIC_PARTS: new Parts(javaList([
-    part('slag:iron', 'slag:sword_blade'),
-    part('slag:iron', 'slag:guard'),
-    part('createmyway:iron_handle', 'createmyway:handle')
-  ])),
-  DAMAGE: 7,
-  CUSTOM_NAME: 'Testing Sword'
-})
+function toolFor(equipment) {
+  const parts = [part('slag:iron', equipment === 'sword' ? 'slag:sword_blade' : `slag:${equipment}_head`)]
+  if (equipment === 'sword') parts.push(part('slag:diamond', 'slag:guard'))
+  parts.push(part('createmyway:gold_handle', 'createmyway:handle'))
+  return new Stack('slag:modular_item', {
+    MODULAR_TYPE: `slag:${equipment}`,
+    DYNAMIC_PARTS: new Parts(javaList(parts)),
+    DAMAGE: 7,
+    CUSTOM_NAME: `Testing ${equipment}`
+  })
+}
 
-function socket(tool, gem) {
-  const gemStack = part(gem, 'createmyway:gem')
+// Check the actual output rolled by Create, not only the preview stack stored
+// in a recipe constructed at search time.
+function assertOutput(result, equipment, gem) {
+  const installed = result.get('DYNAMIC_PARTS').items().filter(item => item.get('PART_TYPE') === 'createmyway:gem')
+  assert.equal(installed.length, 1, `${equipment}: exactly one installed gem`)
+  assert.equal(installed[0].get('MATERIAL_TYPE'), gem, `${equipment}: actual installed gem`)
+  assert.equal(result.get('CUSTOM_DATA').getCompound('cmw_socket').values.gem, gem, `${equipment}: saved socket gem`)
+  assert.equal(result.get('DAMAGE'), 7, `${equipment}: damage preserved`)
+  assert.equal(result.get('CUSTOM_NAME'), `Testing ${equipment}`, `${equipment}: name preserved`)
+  assert.equal(result.get('DYNAMIC_PARTS').items().at(-1).get('PART_TYPE'), 'createmyway:handle')
+}
+
+function socket(tool, equipment, gem) {
+  currentTool = tool
+  heldPart = part(gem, 'createmyway:gem')
   let holder = null
+  // Captured hand input deliberately remains stale, as it would in a cached
+  // recipe search; only deployer.getPlayer() reads the live held gem.
+  const gemAtSearch = heldPart.copy()
   searchRecipe({
-    getInventory: () => ({ getItem: index => index === 0 ? tool : gemStack }),
-    getBlockEntity: () => ({ getLevel: () => level }),
+    getInventory: () => ({ getItem: index => index === 0 ? currentTool : gemAtSearch }),
+    getBlockEntity: () => deployer,
     addRecipe: (supplier, priority) => {
       assert.equal(priority, 1000)
       holder = supplier()
     }
   })
-  assert(holder, `${gem}: socket recipe missing`)
+  assert(holder, `${equipment}/${gem}: socket recipe missing`)
   assert.equal(holder.value.inputs.length, 2)
   assert.equal(holder.value.inputs[1].stack.get('MATERIAL_TYPE'), gem)
-  const result = holder.value.output
-  const installed = result.get('DYNAMIC_PARTS').items().filter(item => item.get('PART_TYPE') === 'createmyway:gem')
-  assert.equal(installed.length, 1)
-  assert.equal(installed[0].get('MATERIAL_TYPE'), gem)
-  assert.equal(result.get('CUSTOM_DATA').getCompound('cmw_socket').values.gem, gem)
-  assert.equal(result.get('DAMAGE'), 7)
-  assert.equal(result.get('CUSTOM_NAME'), 'Testing Sword')
-  return { result, id: holder.id }
+  assert.equal(typeof holder.value.forcedResult, 'function', 'live output supplier must be installed')
+  const result = holder.value.rollResults()
+  assertOutput(result, equipment, gem)
+  return { result, holder, id: holder.id }
 }
 
-function unsocket(tool, expectedGem) {
+function unsocket(tool, equipment, expectedGem) {
   let recovered
   let cancelled = false
   removeWithSaw({
@@ -208,14 +231,31 @@ function unsocket(tool, expectedGem) {
   assert.equal(tool.get('DYNAMIC_PARTS').items().some(item => item.get('PART_TYPE') === 'createmyway:gem'), false)
   assert.equal(tool.get('CUSTOM_DATA').contains('cmw_socket'), false)
   assert.equal(tool.get('DAMAGE'), 7)
+  assert.equal(tool.get('CUSTOM_NAME'), `Testing ${equipment}`)
+  return tool
 }
 
-const initial = socket(sword, first)
-unsocket(initial.result, first)
-const switched = socket(initial.result, second)
-assert.notEqual(initial.id, switched.id, 'Different socket searches must not reuse a recipe ID')
-unsocket(switched.result, second)
-const repeated = socket(switched.result, first)
-assert.notEqual(initial.id, repeated.id, 'Resocketing the same gem must also produce a fresh recipe ID')
-assert.notEqual(switched.id, repeated.id)
-console.log('Gem resocket regression passed: Rose Quartz -> remove -> Venom -> remove -> Rose Quartz')
+for (const equipment of equipmentTypes) {
+  for (const [first, second] of [[rose, diamond], [diamond, rose]]) {
+    const original = toolFor(equipment)
+    const initial = socket(original, equipment, first)
+    const cleared = unsocket(initial.result, equipment, first)
+
+    // Regression for the real report: Create might apply the recipe object
+    // selected during the FIRST gem installation. Its preview is still first,
+    // but its rolled output must take the current Deployer hand (second).
+    currentTool = cleared
+    heldPart = part(second, 'createmyway:gem')
+    assert.equal(initial.holder.value.output.get('CUSTOM_DATA').getCompound('cmw_socket').values.gem, first)
+    const staleRecipeResult = initial.holder.value.rollResults()
+    assertOutput(staleRecipeResult, equipment, second)
+
+    const switched = socket(cleared, equipment, second)
+    assert.notEqual(initial.id, switched.id, `${equipment}: swapped gem needs a new recipe ID`)
+    const clearedAgain = unsocket(switched.result, equipment, second)
+    const repeated = socket(clearedAgain, equipment, first)
+    assert.notEqual(initial.id, repeated.id, `${equipment}: repeated gem needs a fresh recipe ID`)
+    assert.notEqual(switched.id, repeated.id)
+  }
+}
+console.log('Gem resocket regression passed: both gem orders and stale recipe outputs on all five equipment types')
