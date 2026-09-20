@@ -155,22 +155,30 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   const equipment = cmwEquipmentType(tool)
   const gem = cmwGemFromPart(gemPart)
   if (!equipment || !gem || registry.materialParts[gem] !== 'createmyway:gem') return
-  const parts = cmwParts(tool)
-  if (!parts || parts.isEmpty() || cmwInstalledGem(parts)) return
-  if (!(registry.materialEquipment[gem] || []).includes(equipment)) {
-    // Prevent an unrelated default application recipe from using a known
-    // CreateMyWay gem on an incompatible tool.
+
+  // A search can be invoked while the Deployer's recipe inventory still
+  // contains a previously held gem. Validate the *real* hand as well as the
+  // recipe inventory before handing Create an actionable recipe. Reject every
+  // invalid CMW socket combination (including an occupied socket) so an
+  // ordinary item-application recipe cannot animate repeatedly in its place.
+  const deployer = event.getBlockEntity()
+  const player = deployer.getPlayer()
+  const livePart = player ? player.getMainHandItem() : null
+  if (!cmwCanSocket(tool, gemPart, registry) ||
+      !cmwCanSocket(tool, livePart, registry) ||
+      cmwGemFromPart(livePart) !== gem) {
     event.setCanceled(true)
     return
   }
 
-  const deployer = event.getBlockEntity()
   const level = deployer.getLevel()
   if (!level || level.isClientSide()) return
   const output = cmwSocketedCopy(tool, gemPart, gem, equipment, level)
   const outputGem = cmwInstalledGem(cmwParts(output))
   if (!outputGem || cmwGemFromPart(outputGem) !== gem) {
+    // Never offer a malformed result to the Deployer.
     console.error(`[CreateMyWay] Gem socket preview mismatch for ${gem}.`)
+    event.setCanceled(true)
     return
   }
 
@@ -184,13 +192,12 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   builder.toolNotConsumed()
   const recipe = builder['output(net.minecraft.world.item.ItemStack)'](output).build()
   recipe.enforceNextResult(() => {
-    const player = deployer.getPlayer()
+    const currentPlayer = deployer.getPlayer()
     const currentTool = inventory.getItem(0)
-    const currentPart = player ? player.getMainHandItem() : null
+    const currentPart = currentPlayer ? currentPlayer.getMainHandItem() : null
     if (!cmwCanSocket(currentTool, currentPart, registry)) {
-      // Create can apply a recipe selected before the hand or depot item changed.
-      // Return the unchanged tool without consuming anything; never throw from
-      // ProcessingRecipe.rollResults(), which would crash the server tick.
+      // A hand/depot swap after search must never crash or consume a gem.
+      // Normal invalid inputs are stopped above, before a recipe starts.
       return currentTool && !currentTool.isEmpty() ? currentTool.copy() : tool.copy()
     }
     const currentEquipment = cmwEquipmentType(currentTool)
