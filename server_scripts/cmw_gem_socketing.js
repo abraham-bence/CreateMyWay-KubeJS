@@ -23,10 +23,9 @@ const CMW_SOCKET_DATA = 'cmw_socket'
 const CMW_EQUIPMENT_TYPES = ['pickaxe', 'axe', 'shovel', 'hoe', 'sword']
 let cmwSocketRecipeSequence = 0
 
-// These recipes are created on demand, not registered with the recipe manager.
-// Reusing the same ID for a different gem/output can return a previous recipe
-// in consumers that cache by ID. Include the gem AND a per-search sequence so
-// a resocketed sword cannot reuse a prior output, even with the same gem.
+// IDs are unique for each recipe search. The output is ALSO recomputed at the
+// moment Create applies the recipe; unique IDs alone cannot prevent an older
+// recipe instance from retaining its original gem's result.
 function cmwSocketRecipeId(equipment, gem) {
   cmwSocketRecipeSequence += 1
   return $CmwResourceLocation.parse(
@@ -165,7 +164,8 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   if (!parts || parts.isEmpty() || cmwInstalledGem(parts)) return
   if (!(registry.materialEquipment[gem] || []).includes(equipment)) return
 
-  const level = event.getBlockEntity().getLevel()
+  const deployer = event.getBlockEntity()
+  const level = deployer.getLevel()
   if (!level || level.isClientSide()) return
   const output = cmwSocketedCopy(tool, gemPart, gem, equipment, level)
   const outputGem = cmwInstalledGem(cmwParts(output))
@@ -185,6 +185,36 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, tool.copy()))
   builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, gemPart.copy()))
   const recipe = builder['output(net.minecraft.world.item.ItemStack)'](output).build()
+
+  // Create can retain a processing recipe between its initial search and the
+  // actual application. Its normal ProcessingOutput stores the gemmed ItemStack
+  // captured above, which can reinstall an earlier gem on a resocketed tool.
+  // Read the live hand AND the current recipe inventory when Create rolls the
+  // output instead. This also makes a previously selected recipe safe if its
+  // originally held gem has been swapped while the Deployer is operating.
+  recipe.enforceNextResult(() => {
+    const player = deployer.getPlayer()
+    const currentTool = inventory.getItem(0)
+    const currentPart = player ? player.getMainHandItem() : null
+    const currentEquipment = cmwEquipmentType(currentTool)
+    const currentGem = cmwGemFromPart(currentPart)
+    const currentParts = cmwParts(currentTool)
+    if (!currentEquipment || !currentGem ||
+        registry.materialParts[currentGem] !== 'createmyway:gem' ||
+        !(registry.materialEquipment[currentGem] || []).includes(currentEquipment) ||
+        !currentParts || currentParts.isEmpty() || cmwInstalledGem(currentParts)) {
+      // Failing before Create consumes the held item is safer than silently
+      // returning a stale output or consuming a gem with no valid result.
+      throw new Error('[CreateMyWay] Invalid live Deployer inputs during gem socketing; refusing stale recipe.')
+    }
+    const currentOutput = cmwSocketedCopy(currentTool, currentPart, currentGem, currentEquipment, level)
+    const installed = cmwInstalledGem(cmwParts(currentOutput))
+    if (!installed || cmwGemFromPart(installed) !== currentGem) {
+      throw new Error(`[CreateMyWay] Socket output mismatch: expected ${currentGem}; refusing stale result.`)
+    }
+    return currentOutput
+  })
+
   const holder = new $CmwRecipeHolder(recipeId, recipe)
   event.addRecipe(() => $CmwOptional.of(holder), 1000)
 })
