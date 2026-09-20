@@ -136,15 +136,17 @@ function toolFor(equipment) {
     CUSTOM_NAME: `Testing ${equipment}`
   })
 }
-function search(tool, gem, order = 'tool-first') {
-  // Both input orders must reach the same recipe search result once both items
-  // are present. The mocked test cannot prove DepotBehaviour actually retries.
+function search(tool, gem, order = 'tool-first', liveOverride = null) {
+  // Either placement order must behave identically once both items are present.
+  // liveOverride simulates a recipe inventory containing an earlier gem while
+  // the Deployer's actual hand has already been changed.
   heldPart = null
   currentTool = null
   const nextPart = part(gem)
   if (order === 'gem-first') { heldPart = nextPart; currentTool = tool }
   else { currentTool = tool; heldPart = nextPart }
   const captured = heldPart.copy()
+  if (liveOverride) heldPart = part(liveOverride)
   let holder = null
   let cancelled = false
   searchRecipe({
@@ -211,18 +213,43 @@ for (const equipment of equipmentTypes) {
     assert.notEqual(initial.id, switched.id)
     unsocket(switched.result, equipment, second)
   }
+
+  // The preflight gate must reject a valid preview if the actual hand changed
+  // while Create was preparing its recipe. Otherwise the unchanged-tool output
+  // fallback can be run repeatedly as though it were a successful application.
+  for (const order of ['tool-first', 'gem-first']) {
+    const mismatched = search(toolFor(equipment), rose, order, diamond)
+    assert.equal(mismatched.cancelled, true, `${equipment}/${order}: mismatched hand must cancel recipe search`)
+    assert.equal(mismatched.holder, null, `${equipment}/${order}: never start mismatched recipe`)
+    assert.equal(heldPart.count, 1, `${equipment}/${order}: keep actual gem`)
+  }
+
+  const occupied = socket(toolFor(equipment), equipment, rose).result
+  for (const order of ['tool-first', 'gem-first']) {
+    const rejected = search(occupied, diamond, order)
+    assert.equal(rejected.cancelled, true, `${equipment}: occupied socket must not start a new recipe`)
+    assert.equal(rejected.holder, null)
+    assert.equal(heldPart.count, 1)
+  }
 }
 for (const equipment of ['pickaxe', 'axe', 'shovel', 'hoe']) {
-  // Invalid CMW gem must not register any recipe (nor fall back to other
-  // application recipes that might already have been selected).
+  // Invalid CMW gem must not register any recipe, including after a saw cycle.
   const tool = toolFor(equipment)
-  const invalid = search(tool, venom, 'gem-first')
-  assert.equal(invalid.holder, null)
-  assert.equal(invalid.cancelled, true)
-  assert.equal(heldPart.count, 1)
+  for (const order of ['tool-first', 'gem-first']) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const invalid = search(tool, venom, order)
+      assert.equal(invalid.holder, null, `${equipment}: rejected attempts never offer processing recipes`)
+      assert.equal(invalid.cancelled, true)
+      assert.equal(heldPart.count, 1)
+    }
+  }
+  const previouslySocketed = unsocket(socket(toolFor(equipment), equipment, rose).result, equipment, rose)
+  const invalidAfterSaw = search(previouslySocketed, venom, 'gem-first')
+  assert.equal(invalidAfterSaw.holder, null, `${equipment}: no invalid recipe after saw removal`)
+  assert.equal(invalidAfterSaw.cancelled, true)
 
-  // A recipe may have been selected with Rose Quartz before the Deployer hand
-  // changed to sword-only Venom. This was the exact reported crash path.
+  // A recipe selected with Rose Quartz before the hand changed to sword-only
+  // Venom must remain a no-crash, no-consumption fallback at application time.
   const previous = search(tool, rose).holder
   assert(previous)
   currentTool = tool
@@ -232,4 +259,4 @@ for (const equipment of ['pickaxe', 'axe', 'shovel', 'hoe']) {
   assert.equal(safeOutput.get('CUSTOM_DATA'), null)
   assert.equal(heldPart.count, 1, `${equipment}: incompatible gem must not be consumed`)
 }
-console.log('Gem socket tests passed: both input orders (search), resocketing and safe incompatible gems on all five types')
+console.log('Gem socket tests passed: early invalid-recipe cancellation, both search orders, resocketing and safe mismatches')
