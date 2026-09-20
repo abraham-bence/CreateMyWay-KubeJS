@@ -183,9 +183,15 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   }
 
   const recipeId = cmwSocketRecipeId(equipment, gem)
+  // DeployerBlockEntity owns one reusable recipeInv. Every getRecipe() call
+  // overwrites both slots, so never retain event.getInventory() in the delayed
+  // result supplier. Component-sensitive copies make this recipe independent
+  // from searches performed while the Deployer is animating.
+  const recipeTool = tool.copy()
+  const recipePart = gemPart.copy()
   const builder = new $CmwItemApplicationBuilder(params => new $CmwDeployerRecipe(params), recipeId)
-  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, tool.copy()))
-  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, gemPart.copy()))
+  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, recipeTool.copy()))
+  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, recipePart.copy()))
   // The live output supplier makes final validation. Keep Create from
   // automatically consuming the gem; consume it ONLY after that validation.
   // Otherwise an incompatible input would crash or silently lose a gem.
@@ -193,20 +199,18 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   const recipe = builder['output(net.minecraft.world.item.ItemStack)'](output).build()
   recipe.enforceNextResult(() => {
     const currentPlayer = deployer.getPlayer()
-    const currentTool = inventory.getItem(0)
     const currentPart = currentPlayer ? currentPlayer.getMainHandItem() : null
-    if (!cmwCanSocket(currentTool, currentPart, registry)) {
+    if (!cmwCanSocket(recipeTool, currentPart, registry) ||
+        cmwGemFromPart(currentPart) !== gem) {
       // A hand/depot swap after search must never crash or consume a gem.
       // Normal invalid inputs are stopped above, before a recipe starts.
-      return currentTool && !currentTool.isEmpty() ? currentTool.copy() : tool.copy()
+      return recipeTool.copy()
     }
-    const currentEquipment = cmwEquipmentType(currentTool)
-    const currentGem = cmwGemFromPart(currentPart)
-    const currentOutput = cmwSocketedCopy(currentTool, currentPart, currentGem, currentEquipment, level)
+    const currentOutput = cmwSocketedCopy(recipeTool, currentPart, gem, equipment, level)
     const installed = cmwInstalledGem(cmwParts(currentOutput))
-    if (!installed || cmwGemFromPart(installed) !== currentGem) {
-      console.error(`[CreateMyWay] Gem socket result mismatch for ${currentGem}; retaining input and gem.`)
-      return currentTool.copy()
+    if (!installed || cmwGemFromPart(installed) !== gem) {
+      console.error(`[CreateMyWay] Gem socket result mismatch for ${gem}; retaining input and gem.`)
+      return recipeTool.copy()
     }
     // All validation and output construction completed successfully.
     currentPart.shrink(1)

@@ -113,6 +113,10 @@ const level = { isClientSide: () => false }
 let heldPart = null
 let currentTool = null
 const deployer = { getLevel: () => level, getPlayer: () => ({ getMainHandItem: () => heldPart }) }
+// Create 6.0.10 keeps one ItemStackHandler in DeployerBlockEntity.recipeInv
+// and wraps that same handler for every recipe search.
+const recipeSlots = [null, null]
+const sharedRecipeInventory = { getItem: index => recipeSlots[index] }
 const context = vm.createContext({
   Java: { loadClass(name) { assert(Object.hasOwn(javaClasses, name), `Unknown Java class: ${name}`); return javaClasses[name] } },
   global: { cmwEquipmentRegistry: registry },
@@ -147,10 +151,12 @@ function search(tool, gem, order = 'tool-first', liveOverride = null) {
   else { currentTool = tool; heldPart = nextPart }
   const captured = heldPart.copy()
   if (liveOverride) heldPart = part(liveOverride)
+  recipeSlots[0] = currentTool
+  recipeSlots[1] = captured
   let holder = null
   let cancelled = false
   searchRecipe({
-    getInventory: () => ({ getItem: index => index === 0 ? currentTool : captured }),
+    getInventory: () => sharedRecipeInventory,
     getBlockEntity: () => deployer,
     addRecipe: (supplier, priority) => { assert.equal(priority, 1000); holder = supplier() },
     setCanceled: value => { cancelled = value }
@@ -207,8 +213,10 @@ for (const equipment of equipmentTypes) {
     currentTool = cleared
     heldPart = part(second)
     assert.equal(initial.holder.value.output.get('CUSTOM_DATA').getCompound('cmw_socket').values.gem, first)
-    assertOutput(initial.holder.value.rollResults(), equipment, second)
-    assert.equal(heldPart.count, 0, `${equipment}: stale recipe must consume the new gem exactly once`)
+    const staleOutput = initial.holder.value.rollResults()
+    assert.equal(staleOutput.get('DYNAMIC_PARTS').items().some(item => item.get('PART_TYPE') === 'createmyway:gem'), false)
+    assert.equal(staleOutput.get('CUSTOM_DATA'), null)
+    assert.equal(heldPart.count, 1, `${equipment}: stale recipe must retain a different live gem`)
     const switched = socket(cleared, equipment, second)
     assert.notEqual(initial.id, switched.id)
     unsocket(switched.result, equipment, second)
@@ -224,12 +232,15 @@ for (const equipment of equipmentTypes) {
     assert.equal(heldPart.count, 1, `${equipment}/${order}: keep actual gem`)
   }
 
-  const occupied = socket(toolFor(equipment), equipment, rose).result
   for (const order of ['tool-first', 'gem-first']) {
+    const occupied = socket(toolFor(equipment), equipment, rose).result
     const rejected = search(occupied, diamond, order)
     assert.equal(rejected.cancelled, true, `${equipment}: occupied socket must not start a new recipe`)
     assert.equal(rejected.holder, null)
     assert.equal(heldPart.count, 1)
+    const reopened = unsocket(occupied, equipment, rose)
+    const recovered = socket(reopened, equipment, diamond, order)
+    assertOutput(recovered.result, equipment, diamond)
   }
 }
 for (const equipment of ['pickaxe', 'axe', 'shovel', 'hoe']) {
@@ -242,6 +253,16 @@ for (const equipment of ['pickaxe', 'axe', 'shovel', 'hoe']) {
       assert.equal(invalid.cancelled, true)
       assert.equal(heldPart.count, 1)
     }
+
+    // Exact reported transition: the same physical tool remains on the Depot,
+    // an incompatible gem is rejected, then a compatible gem must work without
+    // processing a different tool to reset any state.
+    const sameTool = toolFor(equipment)
+    const invalid = search(sameTool, venom, order)
+    assert.equal(invalid.cancelled, true)
+    assert.equal(invalid.holder, null)
+    const recovered = socket(sameTool, equipment, rose, order)
+    assertOutput(recovered.result, equipment, rose)
   }
   const previouslySocketed = unsocket(socket(toolFor(equipment), equipment, rose).result, equipment, rose)
   const invalidAfterSaw = search(previouslySocketed, venom, 'gem-first')
@@ -259,4 +280,19 @@ for (const equipment of ['pickaxe', 'axe', 'shovel', 'hoe']) {
   assert.equal(safeOutput.get('CUSTOM_DATA'), null)
   assert.equal(heldPart.count, 1, `${equipment}: incompatible gem must not be consumed`)
 }
+
+// A delayed result must not read Create's reusable recipeInv after another
+// item search has overwritten it. This was the actual cross-item state leak;
+// dynamic IDs and strict ingredients do not make the shared handler immutable.
+const shovelAfterInvalid = toolFor('shovel')
+assert.equal(search(shovelAfterInvalid, venom).cancelled, true)
+const selected = search(shovelAfterInvalid, rose)
+assert(selected.holder)
+const otherTool = toolFor('axe')
+recipeSlots[0] = otherTool
+recipeSlots[1] = heldPart
+const isolatedResult = selected.holder.value.rollResults()
+assertOutput(isolatedResult, 'shovel', rose)
+assert.equal(isolatedResult.get('MODULAR_TYPE'), 'slag:shovel')
+assert.equal(heldPart.count, 0, 'isolated recipe consumes the selected live gem once')
 console.log('Gem socket tests passed: early invalid-recipe cancellation, both search orders, resocketing and safe mismatches')
