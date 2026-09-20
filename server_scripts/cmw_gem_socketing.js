@@ -4,6 +4,7 @@ const $CmwDeployerRecipeSearchEvent = Java.loadClass('com.simibubi.create.conten
 const $CmwDeployerRecipe = Java.loadClass('com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe')
 const $CmwItemApplicationBuilder = Java.loadClass('com.simibubi.create.content.kinetics.deployer.ItemApplicationRecipe$Builder')
 const $CmwRecipeHolder = Java.loadClass('net.minecraft.world.item.crafting.RecipeHolder')
+const $CmwItemStack = Java.loadClass('net.minecraft.world.item.ItemStack')
 const $CmwComponentIngredient = Java.loadClass('net.neoforged.neoforge.common.crafting.DataComponentIngredient')
 const $CmwBuiltInRegistries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
 const $CmwOptional = Java.loadClass('java.util.Optional')
@@ -184,9 +185,9 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
 
   const recipeId = cmwSocketRecipeId(equipment, gem)
   // DeployerBlockEntity owns one reusable recipeInv. Every getRecipe() call
-  // overwrites both slots, so never retain event.getInventory() in the delayed
-  // result supplier. Component-sensitive copies make this recipe independent
-  // from searches performed while the Deployer is animating.
+  // overwrites both slots. Component-sensitive copies keep the selected recipe
+  // independent; the delayed supplier reads the shared slot only as an exact
+  // identity guard and never uses another tool as this recipe's output source.
   const recipeTool = tool.copy()
   const recipePart = gemPart.copy()
   const builder = new $CmwItemApplicationBuilder(params => new $CmwDeployerRecipe(params), recipeId)
@@ -199,7 +200,14 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   const recipe = builder['output(net.minecraft.world.item.ItemStack)'](output).build()
   recipe.enforceNextResult(() => {
     const currentPlayer = deployer.getPlayer()
+    const currentTool = inventory.getItem(0)
     const currentPart = currentPlayer ? currentPlayer.getMainHandItem() : null
+    if (!currentTool || currentTool.isEmpty() ||
+        !$CmwItemStack.isSameItemSameComponents(currentTool, recipeTool)) {
+      // Another getRecipe() call overwrote Create's shared recipe inventory.
+      // Preserve that current input and do not consume this recipe's gem.
+      return currentTool && !currentTool.isEmpty() ? currentTool.copy() : recipeTool.copy()
+    }
     if (!cmwCanSocket(recipeTool, currentPart, registry) ||
         cmwGemFromPart(currentPart) !== gem) {
       // A hand/depot swap after search must never crash or consume a gem.

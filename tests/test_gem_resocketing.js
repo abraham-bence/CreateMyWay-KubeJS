@@ -80,6 +80,22 @@ const javaClasses = {
   'com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe': class {},
   'com.simibubi.create.content.kinetics.deployer.ItemApplicationRecipe$Builder': RecipeBuilder,
   'net.minecraft.world.item.crafting.RecipeHolder': class { constructor(id, recipe) { this.id = id; this.value = recipe } },
+  'net.minecraft.world.item.ItemStack': {
+    isSameItemSameComponents: (left, right) => {
+      if (left.id !== right.id) return false
+      for (const component of ['MODULAR_TYPE', 'DAMAGE', 'CUSTOM_NAME']) {
+        if (left.get(component) !== right.get(component)) return false
+      }
+      const leftParts = left.get('DYNAMIC_PARTS')
+      const rightParts = right.get('DYNAMIC_PARTS')
+      if (!leftParts || !rightParts || leftParts.items().length !== rightParts.items().length) return leftParts === rightParts
+      return leftParts.items().every((item, index) => {
+        const other = rightParts.items()[index]
+        return item.id === other.id && item.get('PART_TYPE') === other.get('PART_TYPE') &&
+          item.get('MATERIAL_TYPE') === other.get('MATERIAL_TYPE') && item.get('BUILT') === other.get('BUILT')
+      })
+    }
+  },
   'net.neoforged.neoforge.common.crafting.DataComponentIngredient': { of: (strict, stack) => ({ strict, stack }) },
   'net.minecraft.core.registries.BuiltInRegistries': { ITEM: { getKey: item => item.id } },
   'java.util.Optional': { of: value => value },
@@ -281,9 +297,9 @@ for (const equipment of ['pickaxe', 'axe', 'shovel', 'hoe']) {
   assert.equal(heldPart.count, 1, `${equipment}: incompatible gem must not be consumed`)
 }
 
-// A delayed result must not read Create's reusable recipeInv after another
-// item search has overwritten it. This was the actual cross-item state leak;
-// dynamic IDs and strict ingredients do not make the shared handler immutable.
+// A delayed result must not apply itself to a different tool after another
+// search overwrites Create's reusable recipeInv. This was the actual cross-item
+// state leak; dynamic IDs and strict ingredients do not isolate that handler.
 const shovelAfterInvalid = toolFor('shovel')
 assert.equal(search(shovelAfterInvalid, venom).cancelled, true)
 const selected = search(shovelAfterInvalid, rose)
@@ -292,7 +308,8 @@ const otherTool = toolFor('axe')
 recipeSlots[0] = otherTool
 recipeSlots[1] = heldPart
 const isolatedResult = selected.holder.value.rollResults()
-assertOutput(isolatedResult, 'shovel', rose)
-assert.equal(isolatedResult.get('MODULAR_TYPE'), 'slag:shovel')
-assert.equal(heldPart.count, 0, 'isolated recipe consumes the selected live gem once')
+assert.equal(isolatedResult.get('MODULAR_TYPE'), 'slag:axe')
+assert.equal(isolatedResult.get('DYNAMIC_PARTS').items().some(item => item.get('PART_TYPE') === 'createmyway:gem'), false)
+assert.equal(isolatedResult.get('CUSTOM_DATA'), null)
+assert.equal(heldPart.count, 1, 'cross-item mismatch retains the gem')
 console.log('Gem socket tests passed: early invalid-recipe cancellation, both search orders, resocketing and safe mismatches')
