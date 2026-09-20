@@ -95,14 +95,20 @@ assert(linesForPart('createmyway:cut_emerald_gem', 'createmyway:gem')
 assert(linesForPart('createmyway:cut_lapis_gem', 'createmyway:gem')
   .some(line => line.includes('Sword: No extra ability; contributes material stats only')))
 
-function equipmentLines(gemMaterial) {
-  const output = []
-  const parts = gemMaterial ? [{ get(component) {
-    return component === 'PART_TYPE' ? 'createmyway:gem'
-      : component === 'MATERIAL_TYPE' ? gemMaterial : null
-  } }] : []
+function gemPart(materialId) {
+  return { get(component) {
+    if (component === 'PART_TYPE') return 'createmyway:gem'
+    if (component === 'MATERIAL_TYPE') return materialId
+    return null
+  } }
+}
+
+function equipmentItem(equipment, gemMaterial) {
+  // Keep the actual parts array mutable to test repeated calls after a saw
+  // removes a gem and a Deployer replaces it with a different one.
+  const parts = gemMaterial ? [gemPart(gemMaterial)] : []
   const item = { get(component) {
-    if (component === 'MODULAR_TYPE') return 'slag:sword'
+    if (component === 'MODULAR_TYPE') return `slag:${equipment}`
     if (component === 'DYNAMIC_PARTS') return { items() {
       return { iterator() {
         let index = 0
@@ -111,9 +117,76 @@ function equipmentLines(gemMaterial) {
     } }
     return null
   } }
+  return { item, parts }
+}
+
+function equipmentLines(item) {
+  const output = []
   handlers['createmyway:equipment_details']({ item, lines: { add(line) { output.push(line.value) } } })
   return output
 }
-assert.deepEqual(equipmentLines(null), ['Gem Socket: Empty'])
-assert.deepEqual(equipmentLines('createmyway:perfect_rose_quartz_gem'), ['Gem Socket: Perfect Rose Quartz Gem'])
-console.log(`Tooltip regression tests passed: ${gemCount} gems, ${handleCount} handles, sword and socket cases`)
+
+function installedLines(equipment, gem) {
+  return equipmentLines(equipmentItem(equipment, gem).item)
+}
+
+const emptySocket = ['Gem Socket: Empty']
+for (const equipment of ['pickaxe', 'axe', 'shovel', 'hoe', 'sword']) {
+  assert.deepEqual(installedLines(equipment, null), emptySocket, `${equipment} empty socket`)
+}
+assert.deepEqual(installedLines('sword', 'createmyway:perfect_rose_quartz_gem'), [
+  'Gem Socket: Perfect Rose Quartz Gem',
+  'Gem Bonus: While held: +0.75 attack reach'
+])
+assert.deepEqual(installedLines('pickaxe', 'createmyway:perfect_rose_quartz_gem'), [
+  'Gem Socket: Perfect Rose Quartz Gem',
+  'Gem Bonus: While held: +1.5 block reach'
+])
+assert.deepEqual(installedLines('axe', 'createmyway:perfect_rose_quartz_gem'), [
+  'Gem Socket: Perfect Rose Quartz Gem',
+  'Gem Bonus: While held: +1.5 block reach'
+])
+assert.deepEqual(installedLines('sword', 'createmyway:perfect_emerald_gem'), [
+  'Gem Socket: Perfect Emerald Gem',
+  'Gem Bonus: Grants Looting III'
+])
+assert.deepEqual(installedLines('pickaxe', 'createmyway:perfect_emerald_gem'), [
+  'Gem Socket: Perfect Emerald Gem',
+  'Gem Bonus: Grants Fortune III'
+])
+assert.deepEqual(installedLines('sword', 'createmyway:cut_venom_gem'), [
+  'Gem Socket: Cut Venom Gem',
+  'Gem Bonus: On hit: Poison I for 3s'
+])
+assert.deepEqual(installedLines('sword', 'createmyway:cut_lapis_gem'), [
+  'Gem Socket: Cut Lapis Gem',
+  'Gem Bonus: No extra ability; contributes material stats only'
+])
+
+// Test every profile on every compatible equipment type, including gems with
+// multiple effects and status/enchanted gems not individually listed above.
+let compatibleCombinations = 0
+for (const [gem, partId] of Object.entries(registry.materialParts)) {
+  if (partId !== 'createmyway:gem') continue
+  for (const equipment of registry.materialEquipment[gem]) {
+    const lines = installedLines(equipment, gem)
+    assert.equal(lines.length, 2, `${equipment}/${gem}: only socket and bonus lines`)
+    assert.equal(lines[0], `Gem Socket: ${registry.materialNames[gem]}`)
+    assert(lines[1].startsWith('Gem Bonus: '), `${equipment}/${gem}: bonus missing`)
+    assert(!lines[1].includes('undefined'), `${equipment}/${gem}: malformed bonus`)
+    compatibleCombinations++
+  }
+}
+
+// The same sword must always reflect its *current* installed gem. Removing it
+// must clear the bonus, and a replacement must never show a stale Rose Quartz.
+const sword = equipmentItem('sword', 'createmyway:perfect_rose_quartz_gem')
+assert(equipmentLines(sword.item)[1].includes('+0.75 attack reach'))
+sword.parts.pop()
+assert.deepEqual(equipmentLines(sword.item), emptySocket)
+sword.parts.push(gemPart('createmyway:cut_venom_gem'))
+assert.deepEqual(equipmentLines(sword.item), [
+  'Gem Socket: Cut Venom Gem',
+  'Gem Bonus: On hit: Poison I for 3s'
+])
+console.log(`Tooltip regression tests passed: ${gemCount} gems, ${handleCount} handles, ${compatibleCombinations} equipped gem/tool pairs and re-socketing`)
