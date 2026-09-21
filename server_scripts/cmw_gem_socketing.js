@@ -1,10 +1,10 @@
-// Dynamic Create gem socketing. Each recipe is built from the actual tool stack
-// to preserve its damage, custom name, components, and player enchantments.
-
+// Dynamic Create gem socketing. Construct each output from the actual tool
+// and gem while preserving existing components, damage, and enchantments.
 const $CmwDeployerRecipeSearchEvent = Java.loadClass('com.simibubi.create.content.kinetics.deployer.DeployerRecipeSearchEvent')
 const $CmwDeployerRecipe = Java.loadClass('com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe')
 const $CmwItemApplicationBuilder = Java.loadClass('com.simibubi.create.content.kinetics.deployer.ItemApplicationRecipe$Builder')
 const $CmwRecipeHolder = Java.loadClass('net.minecraft.world.item.crafting.RecipeHolder')
+const $CmwItemStack = Java.loadClass('net.minecraft.world.item.ItemStack')
 const $CmwComponentIngredient = Java.loadClass('net.neoforged.neoforge.common.crafting.DataComponentIngredient')
 const $CmwBuiltInRegistries = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries')
 const $CmwOptional = Java.loadClass('java.util.Optional')
@@ -23,10 +23,6 @@ const CMW_SOCKET_DATA = 'cmw_socket'
 const CMW_EQUIPMENT_TYPES = ['pickaxe', 'axe', 'shovel', 'hoe', 'sword']
 let cmwSocketRecipeSequence = 0
 
-// These recipes are created on demand, not registered with the recipe manager.
-// Reusing the same ID for a different gem/output can return a previous recipe
-// in consumers that cache by ID. Include the gem AND a per-search sequence so
-// a resocketed sword cannot reuse a prior output, even with the same gem.
 function cmwSocketRecipeId(equipment, gem) {
   cmwSocketRecipeSequence += 1
   return $CmwResourceLocation.parse(
@@ -34,8 +30,7 @@ function cmwSocketRecipeId(equipment, gem) {
   )
 }
 
-// DeployerRecipeSearchEvent supplies native Minecraft ItemStacks, not necessarily
-// KubeJS-wrapped event items. Resolve IDs through the vanilla item registry.
+// NativeEvents supplies native Minecraft ItemStacks, not necessarily KubeJS wrappers.
 function cmwItemId(stack) {
   return stack && !stack.isEmpty() ? String($CmwBuiltInRegistries.ITEM.getKey(stack.getItem())) : ''
 }
@@ -63,16 +58,21 @@ function cmwGemFromPart(stack) {
 function cmwInstalledGem(parts) {
   if (!parts) return null
   for (const part of parts.items()) {
-    if (String(part.get($CmwAllDataComponents.PART_TYPE.get())) === 'createmyway:gem') {
-      return part
-    }
+    if (String(part.get($CmwAllDataComponents.PART_TYPE.get())) === 'createmyway:gem') return part
   }
   return null
 }
 
-// KubeJS remaps ItemStack.set() to a JSON-based component wrapper. Native
-// ResourceLocations and Slag's DataDynamicParts cannot pass through that wrapper.
-// The existing stack's mutable component map accepts these already-typed values.
+function cmwCanSocket(tool, part, registry) {
+  const equipment = cmwEquipmentType(tool)
+  const gem = cmwGemFromPart(part)
+  if (!equipment || !gem || registry.materialParts[gem] !== 'createmyway:gem') return false
+  const parts = cmwParts(tool)
+  return !!(parts && !parts.isEmpty() && !cmwInstalledGem(parts) &&
+    (registry.materialEquipment[gem] || []).includes(equipment))
+}
+
+// KubeJS Stack.set() JSON conversion cannot accept native Slag DataDynamicParts.
 function cmwSetNativeComponent(stack, component, value) {
   stack.getComponents().set(component, value)
 }
@@ -89,7 +89,6 @@ function cmwApplyGemEnchantments(stack, gem, equipment, level) {
   const mutable = new $CmwMutableEnchantments(stack.getEnchantments())
   const previousTag = new $CmwCompoundTag()
   const grantedTag = new $CmwCompoundTag()
-
   Object.keys(grants).forEach(id => {
     const holder = cmwEnchantmentHolder(level, id)
     if (!holder) return
@@ -100,7 +99,6 @@ function cmwApplyGemEnchantments(stack, gem, equipment, level) {
     if (granted > previous) mutable.set(holder, granted)
   })
   $CmwEnchantmentHelper.setEnchantments(stack, mutable.toImmutable())
-
   $CmwCustomData.update($CmwDataComponents.CUSTOM_DATA, stack, root => {
     const socket = new $CmwCompoundTag()
     socket.putString('gem', gem)
@@ -117,14 +115,12 @@ function cmwRestoreGemEnchantments(stack, level) {
   const previousTag = socket.getCompound('previous_enchantments')
   const grantedTag = socket.getCompound('granted_enchantments')
   const mutable = new $CmwMutableEnchantments(stack.getEnchantments())
-
   grantedTag.getAllKeys().forEach(id => {
     const holder = cmwEnchantmentHolder(level, String(id))
     if (!holder) return
     const current = mutable.getLevel(holder)
     const granted = grantedTag.getInt(String(id))
     const previous = previousTag.getInt(String(id))
-    // Keep any enchantment the player upgraded above the socket's granted level.
     if (current <= granted) mutable.set(holder, previous)
   })
   $CmwEnchantmentHelper.setEnchantments(stack, mutable.toImmutable())
@@ -137,7 +133,6 @@ function cmwSocketedCopy(tool, gemPart, gem, equipment, level) {
   const installedPart = gemPart.copy()
   installedPart.setCount(1)
   cmwSetNativeComponent(installedPart, $CmwAllDataComponents.BUILT.get(), $CmwResourceLocation.parse(`slag:${equipment}`))
-
   let handleIndex = parts.size()
   for (let index = 0; index < parts.size(); index++) {
     if (String(parts.get(index).get($CmwAllDataComponents.PART_TYPE.get())) === 'createmyway:handle') {
@@ -161,49 +156,90 @@ NativeEvents.onEvent($CmwDeployerRecipeSearchEvent, event => {
   const equipment = cmwEquipmentType(tool)
   const gem = cmwGemFromPart(gemPart)
   if (!equipment || !gem || registry.materialParts[gem] !== 'createmyway:gem') return
-  const parts = cmwParts(tool)
-  if (!parts || parts.isEmpty() || cmwInstalledGem(parts)) return
-  if (!(registry.materialEquipment[gem] || []).includes(equipment)) return
 
-  const level = event.getBlockEntity().getLevel()
+  // A search can be invoked while the Deployer's recipe inventory still
+  // contains a previously held gem. Validate the *real* hand as well as the
+  // recipe inventory before handing Create an actionable recipe. Reject every
+  // invalid CMW socket combination (including an occupied socket) so an
+  // ordinary item-application recipe cannot animate repeatedly in its place.
+  const deployer = event.getBlockEntity()
+  const player = deployer.getPlayer()
+  const livePart = player ? player.getMainHandItem() : null
+  if (!cmwCanSocket(tool, gemPart, registry) ||
+      !cmwCanSocket(tool, livePart, registry) ||
+      cmwGemFromPart(livePart) !== gem) {
+    event.setCanceled(true)
+    return
+  }
+
+  const level = deployer.getLevel()
   if (!level || level.isClientSide()) return
   const output = cmwSocketedCopy(tool, gemPart, gem, equipment, level)
   const outputGem = cmwInstalledGem(cmwParts(output))
   if (!outputGem || cmwGemFromPart(outputGem) !== gem) {
-    console.error(`[CreateMyWay] Gem socket result does not match held gem ${gem}; refusing recipe.`)
+    // Never offer a malformed result to the Deployer.
+    console.error(`[CreateMyWay] Gem socket preview mismatch for ${gem}.`)
+    event.setCanceled(true)
     return
   }
 
   const recipeId = cmwSocketRecipeId(equipment, gem)
-  const builder = new $CmwItemApplicationBuilder(
-    params => new $CmwDeployerRecipe(params),
-    recipeId
-  )
-  // Create's builder overloads require(...) for ItemLike, Ingredient and fluid
-  // inputs. Rhino finds them ambiguous even when passed an Ingredient. Select
-  // the exact Ingredient overload while keeping full component-sensitive inputs.
-  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, tool.copy()))
-  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, gemPart.copy()))
+  // DeployerBlockEntity owns one reusable recipeInv. Every getRecipe() call
+  // overwrites both slots. Component-sensitive copies keep the selected recipe
+  // independent; the delayed supplier reads the shared slot only as an exact
+  // identity guard and never uses another tool as this recipe's output source.
+  const recipeTool = tool.copy()
+  const recipePart = gemPart.copy()
+  const builder = new $CmwItemApplicationBuilder(params => new $CmwDeployerRecipe(params), recipeId)
+  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, recipeTool.copy()))
+  builder['require(net.minecraft.world.item.crafting.Ingredient)']($CmwComponentIngredient.of(true, recipePart.copy()))
+  // The live output supplier makes final validation. Keep Create from
+  // automatically consuming the gem; consume it ONLY after that validation.
+  // Otherwise an incompatible input would crash or silently lose a gem.
+  builder.toolNotConsumed()
   const recipe = builder['output(net.minecraft.world.item.ItemStack)'](output).build()
+  recipe.enforceNextResult(() => {
+    const currentPlayer = deployer.getPlayer()
+    const currentTool = inventory.getItem(0)
+    const currentPart = currentPlayer ? currentPlayer.getMainHandItem() : null
+    if (!currentTool || currentTool.isEmpty() ||
+        !$CmwItemStack.isSameItemSameComponents(currentTool, recipeTool)) {
+      // Another getRecipe() call overwrote Create's shared recipe inventory.
+      // Preserve that current input and do not consume this recipe's gem.
+      return currentTool && !currentTool.isEmpty() ? currentTool.copy() : recipeTool.copy()
+    }
+    if (!cmwCanSocket(recipeTool, currentPart, registry) ||
+        cmwGemFromPart(currentPart) !== gem) {
+      // A hand/depot swap after search must never crash or consume a gem.
+      // Normal invalid inputs are stopped above, before a recipe starts.
+      return recipeTool.copy()
+    }
+    const currentOutput = cmwSocketedCopy(recipeTool, currentPart, gem, equipment, level)
+    const installed = cmwInstalledGem(cmwParts(currentOutput))
+    if (!installed || cmwGemFromPart(installed) !== gem) {
+      console.error(`[CreateMyWay] Gem socket result mismatch for ${gem}; retaining input and gem.`)
+      return recipeTool.copy()
+    }
+    // All validation and output construction completed successfully.
+    currentPart.shrink(1)
+    return currentOutput
+  })
   const holder = new $CmwRecipeHolder(recipeId, recipe)
   event.addRecipe(() => $CmwOptional.of(holder), 1000)
 })
 
-// Create has no dynamic cutting-recipe hook. Right-clicking a powered Mechanical
-// Saw performs the reversible removal while preserving the exact held tool.
+// Right-click a powered Mechanical Saw to remove the gem from the held tool.
 BlockEvents.rightClicked('create:mechanical_saw', event => {
   if (event.hand !== $CmwInteractionHand.MAIN_HAND || event.level.isClientSide()) return
   const tool = event.item
   const partsData = cmwParts(tool)
   const gemPart = cmwInstalledGem(partsData)
   if (!gemPart) return
-
   const saw = event.block.entity
   if (!saw || saw.getSpeed() === 0) {
     event.player.displayClientMessage(Text.red('The Mechanical Saw must be running to remove a gem.'), true)
     return
   }
-
   const remaining = partsData.itemsCopy()
   let removed = null
   for (let index = 0; index < remaining.size(); index++) {
@@ -213,7 +249,6 @@ BlockEvents.rightClicked('create:mechanical_saw', event => {
     }
   }
   if (!removed) return
-
   cmwSetNativeComponent(tool, $CmwAllDataComponents.DYNAMIC_PARTS.get(), new $CmwDataDynamicParts(remaining))
   cmwRestoreGemEnchantments(tool, event.level)
   removed.remove($CmwAllDataComponents.BUILT.get())

@@ -51,6 +51,7 @@
 
   // Describe the effect for the actual equipment instead of expecting players
   // to infer a sword's behavior from an unrelated utility-tool enchantment.
+  // Both part comparisons and finished equipment use this same formatter.
   function effectSummary(effect, equipment) {
     if (!effect) return ''
     const descriptions = []
@@ -164,17 +165,23 @@
     event.lines.add(Text.of('Final stats depend on all installed parts and their modifiers.').darkGray())
   })
 
-  // Finished equipment deliberately keeps its minimal, one-line socket tooltip.
+  // Finished equipment shows only the installed gem and its effect for THIS tool.
+  // Never report a different equipment type's ability or repeat part statistics.
   ItemEvents.dynamicTooltips('createmyway:equipment_details', event => {
     const equipment = componentId(event.item, $CmwTooltipComponents.MODULAR_TYPE).replace(/^slag:/, '')
     if (!CMW_EQUIPMENT.includes(equipment)) return
     const parts = event.item.get($CmwTooltipComponents.DYNAMIC_PARTS.get())
     if (!parts) return
     const gemMaterial = gemMaterialFromParts(parts)
-    if (gemMaterial) {
-      event.lines.add(Text.of(`Gem Socket: ${displayName(gemMaterial)}`).aqua())
-    } else {
+    if (!gemMaterial) {
       event.lines.add(Text.of('Gem Socket: Empty').darkGray())
+      return
     }
+
+    event.lines.add(Text.of(`Gem Socket: ${displayName(gemMaterial)}`).aqua())
+    const registry = global.cmwEquipmentRegistry
+    const effects = registry && registry.materialEffects && registry.materialEffects[gemMaterial]
+    const bonus = effectSummary(effects && effects[equipment], equipment)
+    event.lines.add(Text.of(`Gem Bonus: ${bonus || 'No extra ability; contributes material stats only'}`).green())
   })
 })()

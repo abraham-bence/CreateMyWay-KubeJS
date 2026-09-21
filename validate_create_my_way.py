@@ -101,7 +101,8 @@ def main():
     ))
     require_markers("server_scripts/cmw_gem_socketing.js", (
         "DeployerRecipeSearchEvent", "create:mechanical_saw", "previous_enchantments",
-        "DYNAMIC_PARTS", "DataComponentIngredient", "getInventory()", "getBlockEntity().getLevel()",
+        "DYNAMIC_PARTS", "DataComponentIngredient", "getInventory()", "getBlockEntity()",
+        "deployer.getLevel()", "deployer.getPlayer()", "getMainHandItem()", "enforceNextResult",
         "cmwItemId", "registry.materialEquipment[gem]", "cmwInstalledGem(parts)",
     ))
     tooltip_script = require_markers("client_scripts/cmw_part_tooltips.js", (
